@@ -31,7 +31,7 @@
 #' viewPointInteract(matrix.lst = list(HCT116 = mat_HCT116_chr19_50kb), bin.width = 50e3,
 #'   vp.start = 11597500, vp.stop = 12672500,
 #'   start = 7e6, stop = 15e6,
-#'   self_interaction = FALSE) #FALSE to not plot intra-TAD interactions
+#'   self_interaction = FALSE) #FALSE to not plot intra-domain interactions
 #'
 #'
 #'
