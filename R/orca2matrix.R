@@ -6,7 +6,7 @@
 #'
 #' @param df_prediction.path The full path of the Orca matrix. Data frame without header which contains orca predictions, i.e. log(Obseved/Expected).
 #' @param scale Size of the scale (i.e. window) of the predictions in base pair (i.e. 32Mb, 16Mb, 8Mb, 4Mb, 2Mb and 1Mb).
-#' @param mpos The coordinate to zoom into for multiscale prediction.
+#' @param mpos The coordinate to zoom into for multiscale prediction. By default Orca uses the center of the analyzed position.
 #' @param chromsize Chromosome size in base pair of the related chromosome.
 #' @param output Character: Default is "OE" to return observed / expected counts. "Obs" to return observed counts.
 #' @param df_normmats.path Optional. Background distance-based expected balanced contact matrices. Only needed to return observed counts.
