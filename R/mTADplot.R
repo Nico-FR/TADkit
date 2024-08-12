@@ -31,7 +31,7 @@
 #' @param bedgraph.lst `data.frame`, `GRanges` or list of path for the bedgraph file(s) plotted as line. Default = NULL (i.e no track is plotted).
 #' it is possible to create several bedgraph tracks (each containing 1 or more lines) by using a list containing few others lists (see vignette). All list must have names.
 #' @param bedgraph.name Name of the bedgraph track when there is only one track (default = "bedgraph"). Otherwise it takes the names of each list.
-#' @param bedgraph_outliers Ratio to remove outliers of all bedgraph files. Default is 0 (ie no filter). To remove the first and last 2 percentiles use 0.02.
+#' @param bedgraph_outliers Ratio to remove outliers of all bedgraph files. Default is 0 (ie no filter). To remove the first and last percentiles use 0.01.
 #' @param colors.lst Set of 8 colors used for each files within a list.
 #'
 #' @return Plot with domains and other tracks as a list of GenomeGraph tracks (see `Gviz::plotTracks` for details).
@@ -309,12 +309,12 @@ mTADplot <- function(tad.lst, chr, start, stop, tad.id = FALSE,
 
         #filter outliers
         if (bedgraph_outliers != 0) {
-          data1 <- data1 %>% dplyr::filter(V4 < stats::quantile(V4, na.rm = TRUE, 1 - bedgraph_outliers))
+          data1 <- data1 %>% dplyr::filter(V4 < stats::quantile(V4, na.rm = TRUE, 1 - bedgraph_outliers)) %>%
+            dplyr::filter(V4 > stats::quantile(V4, na.rm = TRUE, bedgraph_outliers))
         }
 
         #filter area (start & stop)
-        data1 <- data1 %>% dplyr::filter(V4 > stats::quantile(V4, na.rm = TRUE, bedgraph_outliers) &
-                                    V3 >= start & V2 <= stop)
+        data1 <- data1 %>% dplyr::filter(V3 >= start & V2 <= stop)
 
         if (is.na(summary(data1$V4)[4])) {
           message(paste0(names(bedgraph.lst[l])," datas of ", names(bedgraph.lst[[l]][i]), " is empty in that area!"))

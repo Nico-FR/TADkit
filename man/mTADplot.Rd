@@ -53,7 +53,7 @@ it is possible to create several bedgraph tracks (each containing 1 or more line
 
 \item{bedgraph.name}{Name of the bedgraph track when there is only one track (default = "bedgraph"). Otherwise it takes the names of each list.}
 
-\item{bedgraph_outliers}{Ratio to remove outliers of all bedgraph files. Default is 0 (ie no filter). To remove the first and last 2 percentiles use 0.02.}
+\item{bedgraph_outliers}{Ratio to remove outliers of all bedgraph files. Default is 0 (ie no filter). To remove the first and last percentiles use 0.01.}
 
 \item{colors.lst}{Set of 8 colors used for each files within a list.}
 }
