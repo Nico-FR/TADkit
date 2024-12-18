@@ -5,16 +5,19 @@
 #' The output can be plot with `MATplot(output, log2 = TRUE, scale.colors = "ObsExp")`.
 #'
 #' @details The expected number of interaction corresponds to the average interaction counts according to bin distances.
-#' Note that the expected number is only estimated from the chromosome supplied. Other genome wide approaches may be considered.
+#' Note that the expected number of interaction is only estimated from the chromosome supplied. Other genome wide approaches may be considered.
 #'
 #' @param matrix `Matrix` or `matrix` object.
+#' @param output default is "OE" to return observed / expected matrix. Use "E" or "Exp" to return expected matrix.
 #'
 #' @return `dgCMatrix` object: upper triangular and sparse Matrix
 #'
 #' @importFrom stats toeplitz
-#' @importFrom Matrix triu
+#' @importFrom Matrix triu summary
+#' @importFrom dplyr mutate filter group_by summarise
 #' @importClassesFrom Matrix dgCMatrix
 #' @importFrom methods as
+#' @importFrom tidyr complete
 #'
 #' @export
 #'
@@ -26,31 +29,31 @@
 #'     log2 = TRUE, scale.colors = "OE")
 #'
 
-matObsExp <- function(matrix) {
+matObsExp <- function(matrix, output = "OE") {
+
+  i <- j <- . <- dist <- x <- NULL
 
   if(!inherits(matrix, c("Matrix", "matrix"))) {
     stop("input matrix is not a matrix or dgCMatrix object")}
 
-  #using dgcmatrix object
-  #mat = Matrix::triu(matrix)
-  #mat[Matrix::triu(mat == 0)] <- NA
+  if(inherits(matrix, "matrix")) {
+    matrix = methods::as(matrix, "CsparseMatrix")}
 
-  #using matrix (i.e faster)
-  mat =  matrix(matrix, nrow = nrow(matrix), ncol = ncol(matrix))
-  #mat[mat == 0] <- NA
+  diag_mean.df = Matrix::summary(matrix) %>%
+    dplyr::mutate(i = factor(i, levels = 1:ncol(matrix))) %>% #add missing index as levels
+    dplyr::mutate(j = factor(j, levels = 1:ncol(matrix))) %>% #add missing index as levels
+    tidyr::complete(., i, j, fill = list(x = 0), explicit = FALSE) %>% #add value 0 to missing bins
+    dplyr::filter(as.numeric(i) <= as.numeric(j)) %>% #filter lower matrix
+    dplyr::mutate(dist = abs(as.numeric(i) - as.numeric(j))) %>% #add distances between bins
+    dplyr::group_by(dist) %>% dplyr::summarise(diag_mean = mean(x, na.rm = TRUE)) # mean according to distances
+  mat_expected = stats::toeplitz(diag_mean.df$diag_mean)
 
-  #mean diag
-  mean_diag = sapply(1:(ncol(mat) - 1),
-                     function (x){mean(diag(mat[,x:ncol(mat)]), na.rm = T)})
-
-  mat_expected = stats::toeplitz(c(mean_diag, mat[1,ncol(mat)])) #create expected matrix
-
-  output = matrix / mat_expected
+  out = if(output == "OE") {matrix / mat_expected} else if(output == "E") {mat_expected} else if(output == "Exp") {mat_expected}
 
   return(
-    if(inherits(output, "CsparseMatrix")) {output} else {methods::as(output, "CsparseMatrix")}
-    )
-  }
+    if(inherits(out, "CsparseMatrix")) {out} else {methods::as(out, "CsparseMatrix")}
+  )
+}
 
 
 
