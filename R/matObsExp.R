@@ -42,7 +42,7 @@ matObsExp <- function(matrix, output = "OE") {
   diag_mean.df = Matrix::summary(matrix) %>%
     dplyr::mutate(i = factor(i, levels = 1:ncol(matrix))) %>% #add missing index as levels
     dplyr::mutate(j = factor(j, levels = 1:ncol(matrix))) %>% #add missing index as levels
-    tidyr::complete(., i, j, fill = list(x = 0), explicit = FALSE) %>% #add value 0 to missing bins
+    tidyr::complete(., i, j, fill = list(x = NA), explicit = FALSE) %>% #add value NA to missing bins
     dplyr::filter(as.numeric(i) <= as.numeric(j)) %>% #filter lower matrix
     dplyr::mutate(dist = abs(as.numeric(i) - as.numeric(j))) %>% #add distances between bins
     dplyr::group_by(dist) %>% dplyr::summarise(diag_mean = mean(x, na.rm = TRUE)) # mean according to distances
