@@ -40,7 +40,7 @@
 #' @importFrom IRanges IRanges ranges
 #' @import GenomeInfoDb
 #' @importFrom magrittr %>%
-#' @importFrom dplyr select full_join filter
+#' @importFrom dplyr select full_join filter mutate
 #' @importFrom utils read.table
 #' @import Gviz
 #' @import rtracklayer
@@ -71,8 +71,10 @@ mTADplot <- function(tad.lst, chr, start, stop, tad.id = FALSE,
                      bedgraph.lst = NULL, bedgraph.name = "bedgraph", bedgraph_outliers = 0,
                      colors.lst = c("#66C2A5", "#FC8D62", "#8DA0CB", "#E78AC3", "#A6D854", "#FFD92F", "#E5C494", "#B3B3B3")) {
 
+  options(ucscChromosomeNames=FALSE)
   V1 <- V2 <- V3 <- V4 <- . <- NULL
-   #sanity check
+
+  #sanity check
   if (!is.list(tad.lst)) {
     stop("tad.lst must be a list")
   }
@@ -81,6 +83,7 @@ mTADplot <- function(tad.lst, chr, start, stop, tad.id = FALSE,
     warning("There is no seqlenths in tad.lst, see dataframes2grange function")
     return(GenomeInfoDb::seqlengths(tad.lst[[1]]))
   }
+
   ##############################
   # Ideotrack
   ##############################
@@ -90,8 +93,8 @@ mTADplot <- function(tad.lst, chr, start, stop, tad.id = FALSE,
                   name = "", gieStain = "gneg")
 
   ideoTrack <-
-    Gviz::IdeogramTrack(genome = "custom", chromosome = chr,
-                        fontsize = 10, ucscChromosomeNames = T, bands = d1)
+    Gviz::IdeogramTrack(genome = "custom", chromosome = paste0("chr", gsub('chr','', chr)),
+                        fontsize = 10, bands = d1)
   areaTrack <- Gviz::GenomeAxisTrack(
     add53 = T,
     add35 = T,
@@ -110,7 +113,7 @@ mTADplot <- function(tad.lst, chr, start, stop, tad.id = FALSE,
     Track <- Gviz::AnnotationTrack(
       start = GenomicRanges::start(data),
       width = BiocGenerics::width(data),
-      chromosome = as.character(chr),
+      chromosome = paste0("chr", gsub('chr','', chr)),
       id = if (!isTRUE(tad.id)) {paste0(round(BiocGenerics::width(data) / 1e3), "Kb")} else {names(data)},
       genome = "custom",
       name = names(tad.lst)[i],
@@ -174,14 +177,14 @@ mTADplot <- function(tad.lst, chr, start, stop, tad.id = FALSE,
       }
 
       data.gr <- GenomicRanges::GRanges(
-        seqnames = chr,
+        seqnames = paste0("chr", gsub('chr','', chr)),
         ranges = IRanges::ranges(cov.gr),
         strand = "*",
         score = GenomicRanges::mcols(cov.gr)[1]
       )
 
       bigwigTrack <- Gviz::DataTrack(data.gr,
-                                     chr = chr,
+                                     chr = paste0("chr", gsub('chr','', chr)),
                                      type = "hist", aggregation = bigwig.xaxis,
                                      window = "fixed", windowSize = bigwig.binwidth,
                                      fill = colors.lst[i],
@@ -192,7 +195,6 @@ mTADplot <- function(tad.lst, chr, start, stop, tad.id = FALSE,
       bigwigTracks <- append(bigwigTracks, bigwigTrack)
     }
   }
-
 
   #####################################
   # annotTracks
@@ -217,7 +219,7 @@ mTADplot <- function(tad.lst, chr, start, stop, tad.id = FALSE,
           annotTrack <- Gviz::AnnotationTrack(
             start = GenomicRanges::start(data1),
             width = BiocGenerics::width(data1),
-            chromosome = as.character(chr),
+            chromosome = paste0("chr", gsub('chr','', chr)),
             strand = BiocGenerics::strand(data1),
             group = names(data1), groupAnnotation = "group",
             genome = "custom", name = names(annot.lst[i]), col = "deepskyblue4",
@@ -242,7 +244,7 @@ mTADplot <- function(tad.lst, chr, start, stop, tad.id = FALSE,
           annotTrack <- Gviz::AnnotationTrack(
             start = GenomicRanges::start(data1),
             width = BiocGenerics::width(data1),
-            chromosome = as.character(chr),
+            chromosome = paste0("chr", gsub('chr','', chr)),
             strand = BiocGenerics::strand(data1),
             group = GenomicRanges::mcols(data1)[, annot.col], groupAnnotation = "group",
             genome = "custom", name = names(annot.lst[i]), col = "deepskyblue4",
@@ -332,6 +334,7 @@ mTADplot <- function(tad.lst, chr, start, stop, tad.id = FALSE,
         data.gr <- data %>%
           Reduce(function(...) dplyr::full_join(..., by = c("chr", "start", "end")), .) %>%
           dplyr::select("chr", "start", "end", base::sapply(1:length(data), function(x){names(data[[x]][4])})) %>%
+          dplyr::mutate(chr = paste0("chr", gsub('chr','', chr))) %>%
           GenomicRanges::makeGRangesFromDataFrame(keep.extra.columns = T)
 
         bedgraphTracks.temp <- Gviz::DataTrack(
@@ -352,7 +355,7 @@ mTADplot <- function(tad.lst, chr, start, stop, tad.id = FALSE,
   # grids
   #####################################
   data = GenomicRanges::restrict(sort(unlist(methods::as(tad.lst, "GRangesList"))),
-                  start = start, end = stop)
+                                 start = start, end = stop)
   borders = unique(sort(c(GenomicRanges::start(data[GenomeInfoDb::seqnames(data) == chr]),start, BiocGenerics::end(data[GenomeInfoDb::seqnames(data) == chr]),stop)))
 
   ht <- Gviz::HighlightTrack(trackList = c(areaTrack, tadTracks,
@@ -360,7 +363,7 @@ mTADplot <- function(tad.lst, chr, start, stop, tad.id = FALSE,
                                            annotTracks),
                              start = borders,
                              end = borders,
-                             chr = chr, col = "grey70", fill = "white")
+                             chr = paste0("chr", gsub('chr','', chr)), col = "grey70", fill = "white")
 
   #####################################
   #Plot
@@ -372,3 +375,5 @@ mTADplot <- function(tad.lst, chr, start, stop, tad.id = FALSE,
                    background.title = "grey30", grid = TRUE, v = 0
   )
 }
+
+

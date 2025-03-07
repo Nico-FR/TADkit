@@ -36,6 +36,7 @@ From the annotation of TADs and genes, this function return 3 data frames:
 It also return some statistics:
 2- the number of TAD according to the number of genes,
 3- the number of TAD according to the number of genes and strand.
+Note that it can be used with any domains (e.g compartments).
 }
 \details{
 Return a list of 3 dataframes.

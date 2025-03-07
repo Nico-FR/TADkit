@@ -1,32 +1,27 @@
 
-- <a href="#1-tadkit" id="toc-1-tadkit">1 TADkit</a>
-  - <a href="#11-installation" id="toc-11-installation">1.1 Installation</a>
-- <a href="#2-data-format" id="toc-2-data-format">2 Data format</a>
-  - <a href="#21-matrix" id="toc-21-matrix">2.1 matrix</a>
-  - <a href="#22-bed" id="toc-22-bed">2.2 .bed</a>
-  - <a href="#23-bedgraph" id="toc-23-bedgraph">2.3 .bedgraph</a>
-  - <a href="#24-bigwig" id="toc-24-bigwig">2.4 .bigwig</a>
-- <a href="#3-domains-plot" id="toc-3-domains-plot">3 Domains plot</a>
-  - <a href="#31-tadplot" id="toc-31-tadplot">3.1 TADplot</a>
-  - <a href="#32-mtadplot" id="toc-32-mtadplot">3.2 mTADplot</a>
-  - <a href="#33-options" id="toc-33-options">3.3 Options</a>
-- <a href="#4-matrix-plot" id="toc-4-matrix-plot">4 Matrix plot</a>
-  - <a href="#41-matplot" id="toc-41-matplot">4.1 MATplot</a>
-  - <a href="#42-mmatplot" id="toc-42-mmatplot">4.2 mMATplot</a>
-- <a href="#5-distribution-of-features-related-to-domains"
-  id="toc-5-distribution-of-features-related-to-domains">5 Distribution of
-  features related to domains</a>
-  - <a href="#51-around-boundaries" id="toc-51-around-boundaries">5.1 Around
-    boundaries</a>
-  - <a href="#52-within-domains" id="toc-52-within-domains">5.2 Within
-    domains</a>
-- <a href="#6-matrix-pattern-surrounding-features"
-  id="toc-6-matrix-pattern-surrounding-features">6 Matrix pattern
-  surrounding features</a>
-- <a href="#7-compartment-calling-and-orientation"
-  id="toc-7-compartment-calling-and-orientation">7 Compartment calling and
-  orientation</a>
-- <a href="#8-clear-files" id="toc-8-clear-files">8 Clear files</a>
+- [1 TADkit](#1-tadkit)
+  - [1.1 Installation](#11-installation)
+- [2 Data format](#2-data-format)
+  - [2.1 matrix](#21-matrix)
+  - [2.2 .bed](#22-bed)
+  - [2.3 .bedgraph](#23-bedgraph)
+  - [2.4 .bigwig](#24-bigwig)
+- [3 Domains plot](#3-domains-plot)
+  - [3.1 TADplot](#31-tadplot)
+  - [3.2 mTADplot](#32-mtadplot)
+  - [3.3 Options](#33-options)
+- [4 Matrix plot](#4-matrix-plot)
+  - [4.1 MATplot](#41-matplot)
+  - [4.2 mMATplot](#42-mmatplot)
+- [5 Distribution of features related to
+  domains](#5-distribution-of-features-related-to-domains)
+  - [5.1 Around boundaries](#51-around-boundaries)
+  - [5.2 Within domains](#52-within-domains)
+- [6 Matrix pattern surrounding
+  features](#6-matrix-pattern-surrounding-features)
+- [7 Compartment calling and
+  orientation](#7-compartment-calling-and-orientation)
+- [8 Clear files](#8-clear-files)
 
 <!-- README.md is generated from README.Rmd. Please edit that file -->
 
@@ -507,8 +502,10 @@ MATplot(matrix = mat_HCT116_chr19_50kb, start = 5e6, stop = 15e6,
         scale.colors = "H", #color of matrix, try "D" or "H"
         annotations.color = "red")+
   ggtitle("log2(raw count): chr19 human HCT116")
-#> Warning: Removed 1 rows containing missing values (`geom_segment()`).
-#> Removed 1 rows containing missing values (`geom_segment()`).
+#> Warning: Removed 1 row containing missing values or values outside the scale range
+#> (`geom_segment()`).
+#> Removed 1 row containing missing values or values outside the scale range
+#> (`geom_segment()`).
 ```
 
 <img src="man/figures/README-unnamed-chunk-23-1.png" width="100%" />
@@ -548,8 +545,10 @@ MATplot(matrix = matObsExp(mat_HCT116_chr19_50kb),
         tad.line.col = 1 #use the fist metadata columns with factors A or B
         )+
   ggtitle("log2(obs/exp): chr19 human HCT116")
-#> Warning: Removed 1 rows containing missing values (`geom_segment()`).
-#> Removed 1 rows containing missing values (`geom_segment()`).
+#> Warning: Removed 1 row containing missing values or values outside the scale range
+#> (`geom_segment()`).
+#> Removed 1 row containing missing values or values outside the scale range
+#> (`geom_segment()`).
 ```
 
 <img src="man/figures/README-unnamed-chunk-25-1.png" width="100%" />
@@ -573,9 +572,12 @@ mMATplot(matrix.upper = mat_HCT116_chr19_50kb,
          tad.lower.tri = PC1calling(PC1_250kb.gr),
          tad.chr = "chr19")+
   ggtitle("log2(raw count): chr19 ind1 vs ind2")
-#> Warning: Removed 1 rows containing missing values (`geom_segment()`).
-#> Removed 1 rows containing missing values (`geom_segment()`).
-#> Removed 1 rows containing missing values (`geom_segment()`).
+#> Warning: Removed 1 row containing missing values or values outside the scale range
+#> (`geom_segment()`).
+#> Removed 1 row containing missing values or values outside the scale range
+#> (`geom_segment()`).
+#> Removed 1 row containing missing values or values outside the scale range
+#> (`geom_segment()`).
 ```
 
 <img src="man/figures/README-unnamed-chunk-26-1.png" width="100%" />
@@ -650,7 +652,8 @@ areaHist(data.gr,
          annot.boundary = "start",
          annot.strand = FALSE,
          bin.width = 5e3)
-#> Warning: Removed 215 rows containing non-finite values (`stat_bin()`).
+#> Warning: Removed 215 rows containing non-finite outside the scale range
+#> (`stat_bin()`).
 ```
 
 <img src="man/figures/README-unnamed-chunk-31-1.png" width="100%" />
@@ -718,7 +721,8 @@ domainHist(domain.gr = tad_domains.gr, annot.gr = genes.gr,
 #> 685/19025 annotations are outside domains
 #> 2278/19025 annotations are overlapping with a boundary
 #> 16062/19025 annotations are within domains and do not overlap a boundary
-#> Warning: Removed 4 rows containing missing values (`geom_path()`).
+#> Warning: Removed 4 rows containing missing values or values outside the scale range
+#> (`geom_path()`).
 ```
 
 <img src="man/figures/README-unnamed-chunk-34-1.png" width="100%" />
@@ -760,9 +764,10 @@ domainHist(domain.gr = tad_domains.gr, annot.gr = genes.gr,
 #> 685/19025 annotations are outside domains
 #> 2278/19025 annotations are overlapping with a boundary
 #> 16062/19025 annotations are within domains and do not overlap a boundary
-#> Warning: Removed 292 rows containing non-finite values (`stat_bin()`).
-#> Removed 292 rows containing non-finite values (`stat_bin()`).
-#> Warning: Removed 4 rows containing missing values (`geom_path()`).
+#> Warning: Removed 292 rows containing non-finite outside the scale range (`stat_bin()`).
+#> Removed 292 rows containing non-finite outside the scale range (`stat_bin()`).
+#> Warning: Removed 4 rows containing missing values or values outside the scale range
+#> (`geom_path()`).
 ```
 
 <img src="man/figures/README-unnamed-chunk-36-1.png" width="100%" />
@@ -777,11 +782,12 @@ domainHist(domain.gr = TADshuffling(tad_domains.gr), annot.gr = genes.gr,
         ifoverlap = "best", 
         annot.strand = T)
 #> 685/19025 annotations are outside domains
-#> 1858/19025 annotations are overlapping with a boundary
-#> 16482/19025 annotations are within domains and do not overlap a boundary
-#> Warning: Removed 348 rows containing non-finite values (`stat_bin()`).
-#> Removed 348 rows containing non-finite values (`stat_bin()`).
-#> Warning: Removed 4 rows containing missing values (`geom_path()`).
+#> 1742/19025 annotations are overlapping with a boundary
+#> 16598/19025 annotations are within domains and do not overlap a boundary
+#> Warning: Removed 295 rows containing non-finite outside the scale range (`stat_bin()`).
+#> Removed 295 rows containing non-finite outside the scale range (`stat_bin()`).
+#> Warning: Removed 4 rows containing missing values or values outside the scale range
+#> (`geom_path()`).
 ```
 
 <img src="man/figures/README-unnamed-chunk-37-1.png" width="100%" />
@@ -832,9 +838,6 @@ To illustrate, let’s visualized the stacking of the matrices at the TSS
 ``` r
 MATfeatures(matrix = mat_HCT116_chr19_50kb, bin.width = 50e3, annot.gr = genes.gr, chr = "chr19", annot.boundary = "start", window.size = 1e6, output = "plot")
 #> Staking of 1388 matrices on chr chr19.
-#> 'as(<dtCMatrix>, "dgCMatrix")' is deprecated.
-#> Use 'as(., "generalMatrix")' instead.
-#> See help("Deprecated") and help("Matrix-deprecated").
 ```
 
 <img src="man/figures/README-unnamed-chunk-40-1.png" width="100%" />
@@ -945,7 +948,7 @@ We can compare the expression level between compartments before
 orientation:
 
 ``` r
-ggplot(data$expression, aes(y = log2(exp + 1), fill = comp))+geom_boxplot()+facet_wrap(.~chr)
+ggplot(data$expression, aes(y = log2(count + 1), fill = comp))+geom_boxplot()+facet_wrap(.~chr)
 ```
 
 <img src="man/figures/README-unnamed-chunk-44-1.png" width="100%" />

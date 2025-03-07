@@ -22,8 +22,8 @@ compOrientation(bedgraph.gr, annot.gr, expression.data.frame)
 S3 class object with 3 \code{dataframes}.
 }
 \description{
-Considering that the A compartments have a stronger expression than the B compartments.
-This function allows the score (i.e PC1 score) to be oriented (positif or negatif).
+Assuming that A compartments have a higher expression than B compartments.
+This function allows the PC1 score to be oriented from gene expression data.
 Then the compartments A (actif) and B (inactif) can be called accurately.
 }
 \details{
@@ -43,25 +43,5 @@ Return a list with 3 \code{dataframe}.
 }
 \examples{
 # see vignette("Turorial_TADkit_R_package") or on github (https://github.com/Nico-FR/TADkit)
-
-#expression count from airway package
-library("airway")
-library(GenomicFeatures)
-library(EnsDb.Hsapiens.v86)
-data(airway)
-count = assay(airway, "counts")[, 1]
-expression.data.frame = data.frame(ID = names(count),
-                                  Name = names(count),
-                                   count = count)
-
-#gene annotations
-genomic.gr =  genes(EnsDb.Hsapiens.v86, filter = ~ seq_name == c(1:22))
-seqlevelsStyle(genomic.gr) = "UCSC" #use UCSC chromosome names
-genes.gr = genomic.gr[as.character(genomic.gr$gene_biotype) == "protein_coding"]
-
-data <- compOrientation(PC1_250kb.gr, genes.gr, expression.data.frame)
-
-library("ggplot2")
-ggplot(data$expression, aes(y = log2(exp + 1), fill = comp))+geom_boxplot()+facet_wrap(.~chr)
 
 }

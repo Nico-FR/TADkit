@@ -67,6 +67,7 @@ PC1calling <- function(bedgraph) {
   A$comp = "A"
   B$comp = "B"
   output.gr = BiocGenerics::sort(c(A,B))
+  names(output.gr) = output.gr$comp
 
   #add seqinfo if available
   if (!is.null(seqinfo)) {

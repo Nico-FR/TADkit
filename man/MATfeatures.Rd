@@ -27,7 +27,7 @@ MATfeatures(
 
 \item{window.size}{Window to analyze the matrix on each side of the features. By default the window is 40 times the \code{bin.width}.}
 
-\item{output}{Default is \code{"plot"} to return a \code{ggplot} of the observed / expected of the pileup of the matrices (i.e. sum of the matrices). Use \code{"matrix"} to return the \code{matrix}.}
+\item{output}{Default is \code{"matrix"} to return the \code{matrix} (i.e sum of matrices). Use \code{"plot"} to return a \code{ggplot} of the observed / expected of the pileup of the matrices, i.e. ObsExp(sum of matrices).}
 }
 \value{
 A \code{dgCMatrix} object: upper triangular and sparse Matrix

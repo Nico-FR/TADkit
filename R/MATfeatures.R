@@ -13,7 +13,7 @@
 #' @param chr The selected chromosome used to filter `annot.gr`.
 #' @param annot.boundary Type of feature to analyzed. `"Start"`, `"end"` or `"center"` of each `annot.gr`.
 #' @param window.size Window to analyze the matrix on each side of the features. By default the window is 40 times the `bin.width`.
-#' @param output Default is `"plot"` to return a `ggplot` of the observed / expected of the pileup of the matrices (i.e. sum of the matrices). Use `"matrix"` to return the `matrix`.
+#' @param output Default is `"matrix"` to return the `matrix` (i.e sum of matrices). Use `"plot"` to return a `ggplot` of the observed / expected of the pileup of the matrices, i.e. ObsExp(sum of matrices).
 
 #'
 #' @return A `dgCMatrix` object: upper triangular and sparse Matrix
@@ -45,8 +45,8 @@ MATfeatures <- function(matrix, bin.width, annot.gr, chr, annot.boundary = "star
 
   #bin ranges of the matrix
   bin.matrix.gr = GenomicRanges::GRanges(seqnames = chr,
-                                   ranges = IRanges::IRanges(start = 0:(nrow(matrix) - 1) * bin.width + 1,
-                                                             end = 1:(nrow(matrix)) * bin.width))
+                                         ranges = IRanges::IRanges(start = 0:(nrow(matrix) - 1) * bin.width + 1,
+                                                                   end = 1:(nrow(matrix)) * bin.width))
 
 
   bin.matched.lst = S4Vectors::subjectHits(GenomicRanges::findOverlaps(features.gr, bin.matrix.gr))
@@ -72,8 +72,8 @@ MATfeatures <- function(matrix, bin.width, annot.gr, chr, annot.boundary = "star
     })
 
     #staking matrices
-    pil_mat = base::Reduce(`+`, mat.lst) %>% methods::as("dgCMatrix")
-    }
+    pil_mat = base::Reduce(`+`, mat.lst) %>% as.matrix %>% methods::as("CsparseMatrix")
+  }
 
   if (output == "matrix") {return(pil_mat)}
 
@@ -91,12 +91,12 @@ MATfeatures <- function(matrix, bin.width, annot.gr, chr, annot.boundary = "star
     melted_mat$j = (melted_mat$j - 0.5) * bin.width - bin.width / 2 - window.size
     melted_mat$i = (melted_mat$i - 0.5) * -bin.width + bin.width / 2 + window.size
     p <- ggplot2::ggplot()+ggplot2::geom_tile(data = melted_mat, ggplot2::aes(y = i, x = j, fill = x))+
-        ggplot2::scale_fill_gradient2(low = "blue", high ="red",midpoint = 0, mid="white", na.value = "white")+
-        ggplot2::scale_x_continuous(labels = scales::unit_format(unit = "Mb", scale = 1e-6))+
-        ggplot2::scale_y_continuous(labels = scales::unit_format(unit = "Mb", scale = 1e-6))+
-        ggplot2::coord_fixed()+ggplot2::theme(axis.title.x = ggplot2::element_blank(), axis.title.y = ggplot2::element_blank(), legend.title = ggplot2::element_blank())+
-        geom_hline(yintercept = 0, linetype = "dashed", size = 0.25)+geom_vline(xintercept = 0, linetype = "dashed", size = 0.25)
+      ggplot2::scale_fill_gradient2(low = "blue", high ="red",midpoint = 0, mid="white", na.value = "white")+
+      ggplot2::scale_x_continuous(labels = scales::unit_format(unit = "Mb", scale = 1e-6))+
+      ggplot2::scale_y_continuous(labels = scales::unit_format(unit = "Mb", scale = 1e-6))+
+      ggplot2::coord_fixed()+ggplot2::theme(axis.title.x = ggplot2::element_blank(), axis.title.y = ggplot2::element_blank(), legend.title = ggplot2::element_blank())+
+      geom_hline(yintercept = 0, linetype = "dashed", size = 0.25)+geom_vline(xintercept = 0, linetype = "dashed", size = 0.25)
 
     return(p)
-    }
+  }
 }

@@ -70,12 +70,13 @@ TADplot <- function(tad.gr, chr, start, stop, tad.id = FALSE,
                     bigwig.path = NULL, bigwig.binwidth = 1e3, bigwig.xaxis = "mean", bigwig.chr = NULL, bigwig.yaxis = NULL,
                     annot.gr = NULL, annot.col = NULL, bedgraph = NULL) {
 
+  options(ucscChromosomeNames=FALSE)
+
   ##############################
   # Ideotrack
   ##############################
   data <- tad.gr[GenomeInfoDb::seqnames(tad.gr) == chr]
   data$gieStain <- ifelse(1:length(data) %% 2, "gpos100", "gpos25") # alternate colors for TAD
-
   gaps <- GenomicRanges::gaps(data)
   gaps <- gaps[GenomeInfoDb::seqnames(gaps) == chr & BiocGenerics::strand(gaps) == "*"]
   if (length(gaps) != 0) {gaps$gieStain <- "gpos1"} # color for interTAD
@@ -90,14 +91,14 @@ TADplot <- function(tad.gr, chr, start, stop, tad.id = FALSE,
     gieStain = data2$gieStain
   )
 
-  ideoTrack <- Gviz::IdeogramTrack(genome = "custom", chromosome = chr, fontsize = 10, ucscChromosomeNames = T, bands = d1)
+  ideoTrack <- Gviz::IdeogramTrack(genome = "custom", chromosome = paste0("chr", gsub('chr','', chr)), fontsize = 10, bands = d1)
 
   ##############################
   # tadTrack
   ##############################
   data <- tad.gr[GenomeInfoDb::seqnames(tad.gr) == chr &
-    BiocGenerics::end(tad.gr) >= start &
-    GenomicRanges::start(tad.gr) <= stop]
+                   BiocGenerics::end(tad.gr) >= start &
+                   GenomicRanges::start(tad.gr) <= stop]
 
   if (length(data)==0) {tadTrack = Gviz::GenomeAxisTrack(
     add53 = T,
@@ -109,19 +110,19 @@ TADplot <- function(tad.gr, chr, start, stop, tad.id = FALSE,
   extended_start <- start
   extended_stop <- stop
   } else {
-  extended_start <- min(start(data), start)
-  extended_stop <- max(end(data), stop)
+    extended_start <- min(start(data), start)
+    extended_stop <- max(end(data), stop)
 
-  tadTrack <- Gviz::GenomeAxisTrack(
-    range = IRanges::IRanges(
-      start = GenomicRanges::start(data) + 1,
-      end = BiocGenerics::end(data) - 1,
-      names = if (!isTRUE(tad.id)) {paste0(round(BiocGenerics::width(data) / 1e3), "Kb")} else {names(data)}
-    ),
-    fill.range = c("cornflowerblue", "coral1"), add53 = T,
-    add35 = T, littleTicks = T,
-    lwd = 1, col = "black", showId = T, col.id = "black"
-  )
+    tadTrack <- Gviz::GenomeAxisTrack(
+      range = IRanges::IRanges(
+        start = GenomicRanges::start(data) + 1,
+        end = BiocGenerics::end(data) - 1,
+        names = if (!isTRUE(tad.id)) {paste0(round(BiocGenerics::width(data) / 1e3), "Kb")} else {names(data)}
+      ),
+      fill.range = c("cornflowerblue", "coral1"), add53 = T,
+      add35 = T, littleTicks = T,
+      lwd = 1, col = "black", showId = T, col.id = "black"
+    )
   }
 
   ##############################
@@ -174,13 +175,15 @@ TADplot <- function(tad.gr, chr, start, stop, tad.id = FALSE,
     temp <- S4Vectors::aggregate(cov.rle[[as.character(bigwig.chr)]], bins2, FUN = bigwig.xaxis)
     bins2$median_cov <- temp # create metadata with the median values
 
+    GenomeInfoDb::seqlevels(bins2) = paste0("chr", gsub('chr','', GenomeInfoDb::seqlevels(bins2)))
+
     bigwigTrack <- Gviz::DataTrack(bins2,
-      chr = chr,
-      type = "hist",
-      fill = "grey50",
-      name = "bw",
-      col.histogram = "grey25",
-      transformation = transformation.method
+                                   chr =  paste0("chr", gsub('chr','', chr)),
+                                   type = "hist",
+                                   fill = "grey50",
+                                   name = "bw",
+                                   col.histogram = "grey25",
+                                   transformation = transformation.method
     )
   }
 
@@ -192,8 +195,8 @@ TADplot <- function(tad.gr, chr, start, stop, tad.id = FALSE,
   } else {
     if (is.null(annot.col)) {
       data1 <- annot.gr[GenomeInfoDb::seqnames(annot.gr) == chr &
-        BiocGenerics::end(annot.gr) >= extended_start &
-        GenomicRanges::start(annot.gr) <= extended_stop]
+                          BiocGenerics::end(annot.gr) >= extended_start &
+                          GenomicRanges::start(annot.gr) <= extended_stop]
 
       if (length(data1) == 0) {
         annotTrack <- NULL
@@ -201,7 +204,7 @@ TADplot <- function(tad.gr, chr, start, stop, tad.id = FALSE,
         annotTrack <- Gviz::AnnotationTrack(
           start = GenomicRanges::start(data1),
           width = BiocGenerics::width(data1),
-          chromosome = as.character(chr),
+          chromosome = paste0("chr", gsub('chr','', chr)),
           strand = BiocGenerics::strand(data1),
           id = names(data1), groupAnnotation = "id",
           genome = "custom", name = "Annot", col = "deepskyblue4"
@@ -216,8 +219,8 @@ TADplot <- function(tad.gr, chr, start, stop, tad.id = FALSE,
       }
 
       data1 <- annot.gr[GenomeInfoDb::seqnames(annot.gr) == chr &
-        BiocGenerics::end(annot.gr) >= extended_start &
-        GenomicRanges::start(annot.gr) <= extended_stop]
+                          BiocGenerics::end(annot.gr) >= extended_start &
+                          GenomicRanges::start(annot.gr) <= extended_stop]
 
       if (length(data1) == 0) {
         annotTrack <- NULL
@@ -225,7 +228,7 @@ TADplot <- function(tad.gr, chr, start, stop, tad.id = FALSE,
         annotTrack <- Gviz::AnnotationTrack(
           start = GenomicRanges::start(data1),
           width = BiocGenerics::width(data1),
-          chromosome = as.character(chr),
+          chromosome = paste0("chr", gsub('chr','', chr)),
           strand = BiocGenerics::strand(data1),
           group = GenomicRanges::mcols(data1)[,annot.col], groupAnnotation = "group",
           genome = "custom", name = "Annot", col = "deepskyblue4",
@@ -243,7 +246,7 @@ TADplot <- function(tad.gr, chr, start, stop, tad.id = FALSE,
     bedgraphTrack <- NULL
   } else {
     chromsize = data.frame(chr = GenomeInfoDb::seqlevels(tad.gr),
-                              size = GenomeInfoDb::seqlengths(tad.gr))
+                           size = GenomeInfoDb::seqlengths(tad.gr))
     #read bedgraph datas
     ##if dataframe
     if (is.data.frame(bedgraph)) {
@@ -259,7 +262,9 @@ TADplot <- function(tad.gr, chr, start, stop, tad.id = FALSE,
       data1 = bedgraph[,1] %>% GenomeInfoDb::keepSeqlevels(chr, pruning.mode = "coarse")
     }
 
-    bedgraphTrack <- DataTrack(range = data1, type = "b", lwd = 1, name = "bg", chromosome = chr)
+    GenomeInfoDb::seqlevels(data1) = paste0("chr", gsub('chr','', GenomeInfoDb::seqlevels(data1)))
+
+    bedgraphTrack <- DataTrack(range = data1, type = "b", lwd = 1, name = "bg", chromosome =  paste0("chr", gsub('chr','', chr)))
   }
 
   #####################################
@@ -271,14 +276,14 @@ TADplot <- function(tad.gr, chr, start, stop, tad.id = FALSE,
   ht <- Gviz::HighlightTrack(trackList = c(tadTrack, bedgraphTrack, bigwigTrack, annotTrack),
                              start = unique(sort(c(GenomicRanges::start(data),extended_start, BiocGenerics::end(data),extended_stop))),
                              end = unique(sort(c(GenomicRanges::start(data),extended_start, BiocGenerics::end(data),extended_stop))),
-                             chr = chr, col = "grey70", fill = "white")
+                             chr = paste0("chr", gsub('chr','', chr)), col = "grey70", fill = "white")
 
   #####################################
   # Plot
   #####################################
   Gviz::plotTracks(c(ideoTrack, ht),
-    from = extended_start,
-    to = extended_stop,
-    background.title = "grey30", grid = TRUE, v = 0
+                   from = extended_start,
+                   to = extended_stop,
+                   background.title = "grey30", grid = TRUE, v = 0
   )
 }

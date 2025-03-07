@@ -6,13 +6,13 @@
 #' @param bedgraph.lst list of `data.frame`, `GRanges` or full path of the bedgraph files (data frame without header and 4 columns tab separated) containing a score for each bin.
 #' @param method a character string indicating which correlation coefficient is to be computed. One of "pearson" (default), "kendall", or "spearman": can be abbreviated.
 #' @param rm_chr chromosome to filter, default = "X".
-#' @param Qnorm perform quantile normalisation beetween bedgraph files, default = TRUE.
+#' @param Qnorm perform quantile normalisation beetween scores, default = FALSE.
 #'
 #' @return matrix with correlation values
 #'
 #' @import GenomicRanges
 #' @importFrom utils read.table
-#' @importFrom dplyr select full_join filter
+#' @importFrom dplyr select full_join filter mutate_at
 #' @importFrom preprocessCore normalize.quantiles
 #' @examples
 #' bedgraphs.lst = list(ind1 = IS_HCT116_chr19_5kb.bedgraph, ind2 = IS_HCT116_chr19_5kb.bedgraph)
@@ -20,7 +20,7 @@
 #'
 #' @export
 #'
-bgCorr <- function(bedgraph.lst, method = "pearson", rm_chr = "X", Qnorm = TRUE) {
+bgCorr <- function(bedgraph.lst, method = "pearson", rm_chr = "X", Qnorm = FALSE) {
 
   . <- NULL
 
@@ -33,17 +33,22 @@ bgCorr <- function(bedgraph.lst, method = "pearson", rm_chr = "X", Qnorm = TRUE)
   ##if dataframe
   if (is.data.frame(bedgraph.lst[[1]])) {
     data1 =  base::lapply(bedgraph.lst, function(bg){
-      bg[,1:4]})
+      bg[,1:4] %>% mutate_at(4, as.numeric) %>% mutate_at(1, as.character)})
   }
   ##if path
   if (is.character(bedgraph.lst[[1]])) {
     data1 = base::lapply(bedgraph.lst, function(bg){
-      utils::read.table(bg, header = FALSE, sep = "\t")[,1:4]})
+      utils::read.table(bg, header = FALSE, sep = "\t")[,1:4] %>% mutate_at(4, as.numeric) %>% mutate_at(1, as.character)})
   }
   ##if GRanges
   if (inherits(bedgraph.lst[[1]], "GRanges")) {
     data1 = base::lapply(bedgraph.lst, function(bg){
-      as.data.frame(bg) %>% dplyr::select("seqnames", "start", "end", "V4")})
+      as.data.frame(bg) %>% dplyr::select(c(1:3,6)) %>% mutate_at(4, as.numeric)})
+  }
+
+  ##if names is null
+  if (is.null(names(bedgraph.lst))) {
+    names(data1) = 1:length(names(bedgraph.lst))
   }
 
   #add name to V4

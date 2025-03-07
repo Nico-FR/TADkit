@@ -580,7 +580,7 @@ data = compOrientation(bedgraph.gr = PC1_250kb.gr, annot.gr = genes.gr, expressi
 We can compare the expression level between compartments before orientation:
 
 ```{r, fig.height = 9, fig.width = 6}
-ggplot(data$expression, aes(y = log2(exp + 1), fill = comp))+geom_boxplot()+facet_wrap(.~chr)
+ggplot(data$expression, aes(y = log2(count + 1), fill = comp))+geom_boxplot()+facet_wrap(.~chr)
 ```
 
 The median expression level is always higher in the A compartments, PC1 values are therefore correctly oriented. 
