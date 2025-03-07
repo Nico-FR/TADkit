@@ -364,8 +364,7 @@ mMATplot(matrix.upper = mat_HCT116_chr19_50kb,
   ggtitle("log2(raw count): chr19 ind1 vs ind2")
 ```
 
-
-# Distribution of features related to domains
+# Annotations analysis
 
 Two distinct approaches allow to analyzed and visualized distributions of any annotation features (e.g. genes) according to the domains: 
 
@@ -527,30 +526,7 @@ domainCov(domain.gr = comp.gr, annot.gr = genes.gr,
 
 As expected the gene density is higher in compartment A (active compartments) than B.
 
-# Matrix pattern surrounding features
-
-A function allows the quantification and visualization of patterns (of the matrix) surrounding genomic features. 
-
-To illustrate, let's visualized the stacking of the matrices at the TSS (+/- 1Mb) on chromosome 25: 
-
-```{r, fig.height = 5, fig.width = 5}
-MATfeatures(matrix = mat_HCT116_chr19_50kb, bin.width = 50e3, annot.gr = genes.gr, chr = "chr19", annot.boundary = "start", window.size = 1e6, output = "plot")
-```
-
-From the TSS, this matrix plot is created in few steps:
-
-* extract matrices around TSS (+/- 1Mb),
-* stack all the matrices (sum of all matrices),
-* calculate the ratio of observed / expected values with `matObsExp` function,
-* plot the log2.
-
-It is also possible to plot the matrices at TAD starts:
-
-```{r, fig.height = 5, fig.width = 5}
-MATfeatures(matrix = mat_HCT116_chr19_50kb, bin.width = 50e3, annot.gr = tad_domains.gr, chr = "chr19", annot.boundary = "start", window.size = 1e6, output = "plot")
-```
-
-# Compartment calling and orientation
+## Compartment calling and orientation
 
 Algorithms has develop to perform principal component analysis on HiC matrices which allows to identify compartments A or B. The orientation of the principal component scores are random and then can be oriented using gene density or GC percent between compartments A and B. 
 In this package `PC1calling()` allows to call the compartments from the princiapl component scores (PC1)  and `compOrientation()` allows to orient these values according to gene expressions.
@@ -587,6 +563,54 @@ ggplot(data$expression, aes(y = log2(count + 1), fill = comp))+geom_boxplot()+fa
 ```
 
 The median expression level is always higher in the A compartments, PC1 values are therefore correctly oriented. 
+
+# Matrix analysis
+
+## Matrix pattern surrounding features
+
+A function allows the quantification and visualization of patterns (of the matrix) surrounding genomic features. 
+
+To illustrate, let's visualized the stacking of the matrices at the TSS (+/- 1Mb) on chromosome 25: 
+
+```{r, fig.height = 5, fig.width = 5}
+MATfeatures(matrix = mat_HCT116_chr19_50kb, bin.width = 50e3, annot.gr = genes.gr, chr = "chr19", annot.boundary = "start", window.size = 1e6, output = "plot")
+```
+
+From the TSS, this matrix plot is created in few steps:
+
+* extract matrices around TSS (+/- 1Mb),
+* stack all the matrices (sum of all matrices),
+* calculate the ratio of observed / expected values with `matObsExp` function,
+* plot the log2.
+
+It is also possible to plot the matrices at TAD starts:
+
+```{r, fig.height = 5, fig.width = 5}
+MATfeatures(matrix = mat_HCT116_chr19_50kb, bin.width = 50e3, annot.gr = tad_domains.gr, chr = "chr19", annot.boundary = "start", window.size = 1e6, output = "plot")
+```
+
+## Expected interactions
+
+A function calculates and plot the average number of interactions (i.e expected) as a function of the distance between interactions.
+
+```{r}
+matExpDist(matrix.lst = list(HCT116 = mat_HCT116_chr19_50kb), bin.width = 50e3)
+```
+
+## View point interact
+
+Suppose we want to observe how a region (such as a TAD) interacts with the rest of the matrix. Let's plot the obs/exp number of interaction of the TAD previously mentioned (see 4.1.2): 
+
+* 11.6Mb to 12.7Mb:
+```{r}
+viewPointInteract(matrix.lst = list(HCT116 = matObsExp(mat_HCT116_chr19_50kb)), bin.width = 50e3,
+                  vp.start = start(tad_domains.gr["chr19_11597500",]), #start of the TAD
+                  vp.stop = end(tad_domains.gr["chr19_11597500",]), #end of the TAD
+                  start = 7e6, stop = 15e6, #limits
+                  self_interaction = FALSE, #FALSE to not plot intra-TAD interactions
+                  log2 = TRUE, #use log2(Obs/Exp)
+                  output = "plot")
+```
 
 # Clear files
 

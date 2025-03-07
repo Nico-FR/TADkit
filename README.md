@@ -13,15 +13,17 @@
 - [4 Matrix plot](#4-matrix-plot)
   - [4.1 MATplot](#41-matplot)
   - [4.2 mMATplot](#42-mmatplot)
-- [5 Distribution of features related to
-  domains](#5-distribution-of-features-related-to-domains)
+- [5 Annotations analysis](#5-annotations-analysis)
   - [5.1 Around boundaries](#51-around-boundaries)
   - [5.2 Within domains](#52-within-domains)
-- [6 Matrix pattern surrounding
-  features](#6-matrix-pattern-surrounding-features)
-- [7 Compartment calling and
-  orientation](#7-compartment-calling-and-orientation)
-- [8 Clear files](#8-clear-files)
+  - [5.3 Compartment calling and
+    orientation](#53-compartment-calling-and-orientation)
+- [6 Matrix analysis](#6-matrix-analysis)
+  - [6.1 Matrix pattern surrounding
+    features](#61-matrix-pattern-surrounding-features)
+  - [6.2 Expected interactions](#62-expected-interactions)
+  - [6.3 View point interact](#63-view-point-interact)
+- [7 Clear files](#7-clear-files)
 
 <!-- README.md is generated from README.Rmd. Please edit that file -->
 
@@ -582,7 +584,7 @@ mMATplot(matrix.upper = mat_HCT116_chr19_50kb,
 
 <img src="man/figures/README-unnamed-chunk-26-1.png" width="100%" />
 
-# 5 Distribution of features related to domains
+# 5 Annotations analysis
 
 Two distinct approaches allow to analyzed and visualized distributions
 of any annotation features (e.g. genes) according to the domains:
@@ -782,10 +784,10 @@ domainHist(domain.gr = TADshuffling(tad_domains.gr), annot.gr = genes.gr,
         ifoverlap = "best", 
         annot.strand = T)
 #> 685/19025 annotations are outside domains
-#> 1742/19025 annotations are overlapping with a boundary
-#> 16598/19025 annotations are within domains and do not overlap a boundary
-#> Warning: Removed 295 rows containing non-finite outside the scale range (`stat_bin()`).
-#> Removed 295 rows containing non-finite outside the scale range (`stat_bin()`).
+#> 1823/19025 annotations are overlapping with a boundary
+#> 16517/19025 annotations are within domains and do not overlap a boundary
+#> Warning: Removed 346 rows containing non-finite outside the scale range (`stat_bin()`).
+#> Removed 346 rows containing non-finite outside the scale range (`stat_bin()`).
 #> Warning: Removed 4 rows containing missing values or values outside the scale range
 #> (`geom_path()`).
 ```
@@ -827,39 +829,7 @@ domainCov(domain.gr = comp.gr, annot.gr = genes.gr,
 As expected the gene density is higher in compartment A (active
 compartments) than B.
 
-# 6 Matrix pattern surrounding features
-
-A function allows the quantification and visualization of patterns (of
-the matrix) surrounding genomic features.
-
-To illustrate, let’s visualized the stacking of the matrices at the TSS
-(+/- 1Mb) on chromosome 25:
-
-``` r
-MATfeatures(matrix = mat_HCT116_chr19_50kb, bin.width = 50e3, annot.gr = genes.gr, chr = "chr19", annot.boundary = "start", window.size = 1e6, output = "plot")
-#> Staking of 1388 matrices on chr chr19.
-```
-
-<img src="man/figures/README-unnamed-chunk-40-1.png" width="100%" />
-
-From the TSS, this matrix plot is created in few steps:
-
-- extract matrices around TSS (+/- 1Mb),
-- stack all the matrices (sum of all matrices),
-- calculate the ratio of observed / expected values with `matObsExp`
-  function,
-- plot the log2.
-
-It is also possible to plot the matrices at TAD starts:
-
-``` r
-MATfeatures(matrix = mat_HCT116_chr19_50kb, bin.width = 50e3, annot.gr = tad_domains.gr, chr = "chr19", annot.boundary = "start", window.size = 1e6, output = "plot")
-#> Staking of 146 matrices on chr chr19.
-```
-
-<img src="man/figures/README-unnamed-chunk-41-1.png" width="100%" />
-
-# 7 Compartment calling and orientation
+## 5.3 Compartment calling and orientation
 
 Algorithms has develop to perform principal component analysis on HiC
 matrices which allows to identify compartments A or B. The orientation
@@ -951,12 +921,80 @@ orientation:
 ggplot(data$expression, aes(y = log2(count + 1), fill = comp))+geom_boxplot()+facet_wrap(.~chr)
 ```
 
-<img src="man/figures/README-unnamed-chunk-44-1.png" width="100%" />
+<img src="man/figures/README-unnamed-chunk-42-1.png" width="100%" />
 
 The median expression level is always higher in the A compartments, PC1
 values are therefore correctly oriented.
 
-# 8 Clear files
+# 6 Matrix analysis
+
+## 6.1 Matrix pattern surrounding features
+
+A function allows the quantification and visualization of patterns (of
+the matrix) surrounding genomic features.
+
+To illustrate, let’s visualized the stacking of the matrices at the TSS
+(+/- 1Mb) on chromosome 25:
+
+``` r
+MATfeatures(matrix = mat_HCT116_chr19_50kb, bin.width = 50e3, annot.gr = genes.gr, chr = "chr19", annot.boundary = "start", window.size = 1e6, output = "plot")
+#> Staking of 1388 matrices on chr chr19.
+```
+
+<img src="man/figures/README-unnamed-chunk-43-1.png" width="100%" />
+
+From the TSS, this matrix plot is created in few steps:
+
+- extract matrices around TSS (+/- 1Mb),
+- stack all the matrices (sum of all matrices),
+- calculate the ratio of observed / expected values with `matObsExp`
+  function,
+- plot the log2.
+
+It is also possible to plot the matrices at TAD starts:
+
+``` r
+MATfeatures(matrix = mat_HCT116_chr19_50kb, bin.width = 50e3, annot.gr = tad_domains.gr, chr = "chr19", annot.boundary = "start", window.size = 1e6, output = "plot")
+#> Staking of 146 matrices on chr chr19.
+```
+
+<img src="man/figures/README-unnamed-chunk-44-1.png" width="100%" />
+
+## 6.2 Expected interactions
+
+A function calculates and plot the average number of interactions (i.e
+expected) as a function of the distance between interactions.
+
+``` r
+matExpDist(matrix.lst = list(HCT116 = mat_HCT116_chr19_50kb), bin.width = 50e3)
+#> Warning in ggplot2::scale_x_continuous(labels = scales::unit_format(unit =
+#> "Mb", : log-10 transformation introduced infinite values.
+```
+
+<img src="man/figures/README-unnamed-chunk-45-1.png" width="100%" />
+
+## 6.3 View point interact
+
+Suppose we want to observe how a region (such as a TAD) interacts with
+the rest of the matrix. Let’s plot the obs/exp number of interaction of
+the TAD previously mentioned (see 4.1.2):
+
+- 11.6Mb to 12.7Mb:
+
+``` r
+viewPointInteract(matrix.lst = list(HCT116 = matObsExp(mat_HCT116_chr19_50kb)), bin.width = 50e3,
+                  vp.start = start(tad_domains.gr["chr19_11597500",]), #start of the TAD
+                  vp.stop = end(tad_domains.gr["chr19_11597500",]), #end of the TAD
+                  start = 7e6, stop = 15e6, #limits
+                  self_interaction = FALSE, #FALSE to not plot intra-TAD interactions
+                  log2 = TRUE, #use log2(Obs/Exp)
+                  output = "plot")
+#> vp.start/vp.stop are not multiples of bin.width, round to 11600000 and 12650000 (i.e. 21 bins).
+```
+
+<img src="man/figures/README-unnamed-chunk-46-1.png" width="100%" />
+
+# 7 Clear files
 
 ``` r
 file.remove(list.files(full.names = TRUE, pattern = ".bw"))
