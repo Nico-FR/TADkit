@@ -12,6 +12,7 @@ mMATplot(
   bin.width,
   log2 = TRUE,
   scale.colors = "H",
+  scale.limits = NULL,
   matrix.upper.txt = NULL,
   matrix.lower.txt = NULL,
   tad.upper.tri = NULL,
@@ -47,6 +48,8 @@ mMATplot(
 \item \code{"ObsExp"} (or \code{"OE"}),
 \item \code{"ObsExp2"} (or \code{"OE2"}).
 }}
+
+\item{scale.limits}{Use to set limits on the scale. Default is NULL to use all values. E.g if use scale.limits = c(0, 10): Values < 0 will be fix to 0 and values > 10 will be fix to 10.}
 
 \item{matrix.upper.txt, matrix.lower.txt}{text to write on the upper or lower part of the matrix.}
 

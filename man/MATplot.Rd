@@ -12,6 +12,7 @@ MATplot(
   log2 = T,
   scale.colors = "H",
   matrix.diag = T,
+  scale.limits = NULL,
   tad.upper.tri = NULL,
   tad.lower.tri = NULL,
   loop.bedpe = NULL,
@@ -47,6 +48,8 @@ MATplot(
 }}
 
 \item{matrix.diag}{logical. Weather or not to plot diagonal values of the matrix. Default = \code{TRUE}.}
+
+\item{scale.limits}{Use to set limits on the scale. Default is NULL to use all values. E.g if use scale.limits = c(0, 10): Values < 0 will be fix to 0 and values > 10 will be fix to 10.}
 
 \item{tad.upper.tri, tad.lower.tri}{\code{data.frame}, \code{GRanges} or the bed files path with the TAD to plot as triangle in the upper or lower part of the matrix. Default is \code{NULL}.}
 

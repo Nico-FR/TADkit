@@ -16,6 +16,7 @@
 #' @param bin.width Bin width of the matrix in base pair.
 #' @param matrix.diag logical. Weather or not to plot diagonal values of the matrix. Default = `TRUE`.
 #' @param log2 logical. Use the log2 of the matrix values. Default is `TRUE`.
+#' @param scale.limits Use to set limits on the scale. Default is NULL to use all values. E.g if use scale.limits = c(0, 10): Values < 0 will be fix to 0 and values > 10 will be fix to 10.
 #' @param scale.colors A character string indicating the color map option to use. Eight colors palettes are available from `viridis` package. Two supplementary palettes `"OE"` and  `"OE2"` (blue to red and purple to green respectively) are made for data centered on 0 (e.g log2 of observed/expected matrix). Default is `"H"`:
 #' * `"magma"` (or `"A"`),
 #' * `"inferno"` (or `"B"`),
@@ -40,7 +41,7 @@
 #'
 #' @importFrom Matrix triu summary diag tril
 #' @importFrom viridis scale_fill_viridis
-#' @importFrom scales unit_format
+#' @importFrom scales unit_format oob_squish_any
 #' @importFrom dplyr filter
 #' @importFrom BiocGenerics t
 #' @import ggplot2
@@ -74,7 +75,7 @@
 #'     tad.line.col = 1, #used first metadata column with compartments A or B
 #'     tad.chr = "chr19")
 
-MATplot <- function(matrix, start, stop, bin.width, log2 = T, scale.colors = "H", matrix.diag = T,
+MATplot <- function(matrix, start, stop, bin.width, log2 = T, scale.colors = "H", matrix.diag = T, scale.limits = NULL,
                     tad.upper.tri = NULL, tad.lower.tri = NULL, loop.bedpe = NULL, tad.chr = NULL, annotations.color = "red",
                     tad.upper.line = NULL, tad.lower.line = NULL, tad.line.col = NULL, line.colors = c("red", "blue")) {
 
@@ -93,6 +94,11 @@ MATplot <- function(matrix, start, stop, bin.width, log2 = T, scale.colors = "H"
 
   #get log2
   if (log2 == T) {mat@x = log2(mat@x)}
+
+  #squish
+  if (!is.null(scale.limits)) {
+    if (length(scale.limits) != 2) {stop("scale.limits must be a vector with 2 values")}
+    mat@x = scales::oob_squish_any(mat@x, range = scale.limits)}
 
   #melt matrix
   upper_mat = Matrix::summary(Matrix::triu(mat, 1))

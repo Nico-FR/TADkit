@@ -19,7 +19,7 @@
 #'
 #' @importFrom Matrix tril triu summary diag
 #' @importFrom viridis scale_fill_viridis
-#' @importFrom scales unit_format
+#' @importFrom scales unit_format oob_squish_any
 #' @importFrom dplyr full_join select
 #' @importFrom BiocGenerics t
 #' @import ggplot2
@@ -52,7 +52,7 @@
 #'     tad.lower.line = comp.gr,
 #'     tad.line.col = 1)
 
-mMATplot <- function(matrix.upper, matrix.lower, start, stop, bin.width, log2 = TRUE, scale.colors = "H",
+mMATplot <- function(matrix.upper, matrix.lower, start, stop, bin.width, log2 = TRUE, scale.colors = "H", scale.limits = NULL,
                     matrix.upper.txt = NULL, matrix.lower.txt = NULL,
                     tad.upper.tri = NULL, tad.lower.tri = NULL, loop.bedpe = NULL, tad.chr = NULL, annotations.color = "red",
                     tad.upper.line = NULL, tad.lower.line = NULL, tad.line.col = NULL, line.colors = c("red", "blue")) {
@@ -75,6 +75,11 @@ mMATplot <- function(matrix.upper, matrix.lower, start, stop, bin.width, log2 = 
   #get log2
   if (log2 == T) {mat1@x = log2(mat1@x)}
 
+  #squish
+  if (!is.null(scale.limits)) {
+    if (length(scale.limits) != 2) {stop("scale.limits must be a vector with 2 values")}
+    mat1@x = scales::oob_squish_any(mat1@x, range = scale.limits)}
+
   #melt matrix
   upper_mat = Matrix::summary(Matrix::triu(mat1, 1))
   ####################
@@ -90,6 +95,11 @@ mMATplot <- function(matrix.upper, matrix.lower, start, stop, bin.width, log2 = 
 
   #get log2
   if (log2 == T) {mat2@x = log2(mat2@x)}
+
+  #squish
+  if (!is.null(scale.limits)) {
+    if (length(scale.limits) != 2) {stop("scale.limits must be 2 value vector")}
+    mat2@x = scales::oob_squish_any(mat2@x, range = scale.limits)}
 
   #melt matrix
   lower_mat = Matrix::summary(Matrix::tril(BiocGenerics::t(mat2), -1))
