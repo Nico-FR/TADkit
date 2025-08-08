@@ -61,13 +61,6 @@ cool2matrix <- function(cool.path, chr, bin.width = NA, balance = FALSE, balanci
        stop("\n '", chr, "' is not a valid chromosome.", "\nChromosomes available: ", paste0(chromosomes, collapse = ", "), ".")
     }
 
-    # the list of available normalisation names
-    tmp = as.data.frame(rhdf5::h5read(file = cool.path, name = uri("bins/"))) %>% dplyr::filter(chrom == chr) %>% names
-    an = tmp[!tmp %in% c("start", "end", "chrom")]
-    if (!(balancing_name %in% an)) {
-      stop("\n '", balancing_name, "' normalisation is not available.", "\nNormalisations available are: ", paste0(an, collapse = ", "), ".")
-    }
-
     # Index of chrom in the chromosome list
     cid = match(chr, chromosomes)
 
@@ -111,6 +104,14 @@ cool2matrix <- function(cool.path, chr, bin.width = NA, balance = FALSE, balanci
     m = Matrix::sparseMatrix(i = i + 1, j = j + 1, x  =  as.numeric(x))
 
     if (balance) {
+
+      # the list of available normalisation names
+      tmp = as.data.frame(rhdf5::h5read(file = cool.path, name = uri("bins/"))) %>% dplyr::filter(chrom == chr) %>% names
+      an = tmp[!tmp %in% c("start", "end", "chrom")]
+      if (!(balancing_name %in% an)) {
+        stop("\n '", balancing_name, "' normalisation is not available.", "\nNormalisations available are: ", paste0(an, collapse = ", "), ".")
+      }
+
       message("\nBalancing")
       # Fetch the weights corresponding to the chromosome
       bins <- as.data.frame(rhdf5::h5read(file = cool.path, name = uri("bins/"))) %>% dplyr::filter(chrom == chr)
