@@ -9,10 +9,11 @@
 #' While, as mcool files store genomic interactions for multiples resolutions, the chosen resolution must be set with the `bin.width` parameter.
 #'
 #' @param cool.path The full path of the cool or mcool file.
-#' @param bin.width Bin width in base pair (i.e resolution) for mcool file. Default is `NA` for cool file.
+#' @param bin.width Bin width in base pair (i.e resolution) for mcool file only. Default is `NA` to parse cool file.
 #' @param chr The selected chromosome.
 #' @param balance Logical. Weather or not to use balanced counts instead of raw counts. Default = `FALSE`.
 #' @param balancing_name Character that must correspond to the name given to the normalization method used. The most common names (for HiC normalisation) are "weight" (default), "KR", "VC".
+#' @param verbose Logical. Whether or not to print messages. Default = `TRUE`.
 #'
 #' @return A `dgCMatrix` object: upper triangular and sparse Matrix
 #'
@@ -27,9 +28,11 @@
 #' @export
 #'
 #'
-cool2matrix <- function(cool.path, chr, bin.width = NA, balance = FALSE, balancing_name = "weight") {
+cool2matrix <- function(cool.path, chr, bin.width = NA, balance = FALSE, balancing_name = "weight", verbose = TRUE) {
 
-  if (!is.na(bin.width)) {message("Parsing .mcool file.")} else {message("Parsing .cool file.")}
+  if (verbose) {
+    if (!is.na(bin.width)) {message("Parsing .mcool file.")} else {message("Parsing .cool file.")}
+  }
 
   #mcool path
     uri <- function(cool.path) {
@@ -47,6 +50,10 @@ cool2matrix <- function(cool.path, chr, bin.width = NA, balance = FALSE, balanci
     if (!is.na(bin.width)) {
       #available resolutions
       ar = (rhdf5::h5ls(cool.path) %>% dplyr::filter(group == "/resolutions"))$name
+
+      if (!is.numeric(bin.width)) {
+        bin.width = as.numeric(bin.width)
+      }
 
       #if bin.width not available
       if (is.na(match(bin.width, as.numeric(ar)))) {
@@ -112,7 +119,7 @@ cool2matrix <- function(cool.path, chr, bin.width = NA, balance = FALSE, balanci
         stop("\n '", balancing_name, "' normalisation is not available.", "\nNormalisations available are: ", paste0(an, collapse = ", "), ".")
       }
 
-      message("\nBalancing")
+      if (verbose) {message("\nBalancing")}
       # Fetch the weights corresponding to the chromosome
       bins <- as.data.frame(rhdf5::h5read(file = cool.path, name = uri("bins/"))) %>% dplyr::filter(chrom == chr)
       w = bins[,balancing_name]

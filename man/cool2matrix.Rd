@@ -9,7 +9,8 @@ cool2matrix(
   chr,
   bin.width = NA,
   balance = FALSE,
-  balancing_name = "weight"
+  balancing_name = "weight",
+  verbose = TRUE
 )
 }
 \arguments{
@@ -17,11 +18,13 @@ cool2matrix(
 
 \item{chr}{The selected chromosome.}
 
-\item{bin.width}{Bin width in base pair (i.e resolution) for mcool file. Default is \code{NA} for cool file.}
+\item{bin.width}{Bin width in base pair (i.e resolution) for mcool file only. Default is \code{NA} to parse cool file.}
 
 \item{balance}{Logical. Weather or not to use balanced counts instead of raw counts. Default = \code{FALSE}.}
 
 \item{balancing_name}{Character that must correspond to the name given to the normalization method used. The most common names (for HiC normalisation) are "weight" (default), "KR", "VC".}
+
+\item{verbose}{Logical. Whether or not to print messages. Default = \code{TRUE}.}
 }
 \value{
 A \code{dgCMatrix} object: upper triangular and sparse Matrix
