@@ -20,7 +20,7 @@ The input matrix must be a \code{Matrix} or \code{matrix} object (i.e matrix wit
 The output can be plot with \code{MATplot(output, log2 = TRUE, scale.colors = "ObsExp")}.
 }
 \details{
-The expected number of interaction corresponds to the average interaction counts according to bin distances.
+The expected number of interaction corresponds to the average interaction counts according to bin distances (only non-zero values are used to compute).
 Note that the expected number of interaction is only estimated from the chromosome supplied. Other genome wide approaches may be considered.
 }
 \examples{

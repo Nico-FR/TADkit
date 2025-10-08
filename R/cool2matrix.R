@@ -90,7 +90,7 @@ cool2matrix <- function(cool.path, chr, bin.width = NA, balance = FALSE, balanci
     # chrom intra-chromosomal interactions
     id1 = rhdf5::h5read(file = cool.path, name = uri("pixels/bin1_id"), index = list(lo:hi))
     id2 = rhdf5::h5read(file = cool.path, name = uri("pixels/bin2_id"), index = list(lo:hi))
-    interactions = h5read(file = cool.path, name = uri("pixels/count"), index = list(lo:hi))
+    interactions = rhdf5::h5read(file = cool.path, name = uri("pixels/count"), index = list(lo:hi))
 
     # Now we limit the interactions to intrachromosome interactions
     # hence removing bins starting from chrom_hi

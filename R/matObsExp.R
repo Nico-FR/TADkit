@@ -4,7 +4,7 @@
 #' The input matrix must be a `Matrix` or `matrix` object (i.e matrix with as many rows and columns than the number of bin).
 #' The output can be plot with `MATplot(output, log2 = TRUE, scale.colors = "ObsExp")`.
 #'
-#' @details The expected number of interaction corresponds to the average interaction counts according to bin distances.
+#' @details The expected number of interaction corresponds to the average interaction counts according to bin distances (only non-zero values are used to compute).
 #' Note that the expected number of interaction is only estimated from the chromosome supplied. Other genome wide approaches may be considered.
 #'
 #' @param matrix `Matrix` or `matrix` object.
