@@ -45,6 +45,8 @@ Alternatively, other predefined functions can be supplied as character (\code{"m
 \item{annot.col}{Column number of the metadata from \code{annot.gr} file used to group the annotation tracks. Default = \code{NULL}.}
 
 \item{bedgraph}{\code{data.frame}, \code{GRanges} or path for the bedgraph file (data frame without header and 4 columns tab separated) plotted as line. Default = NULL (i.e no track is plotted).}
+
+\item{title}{Title of the plot. Default is null (ie no title).}
 }
 \value{
 Plot with domains and other tracks as a list of GenomeGraph tracks (see \code{Gviz::plotTracks} for details).

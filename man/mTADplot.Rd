@@ -21,7 +21,8 @@ mTADplot(
   bedgraph.name = "bedgraph",
   bedgraph_outliers = 0,
   colors.lst = c("#66C2A5", "#FC8D62", "#8DA0CB", "#E78AC3", "#A6D854", "#FFD92F",
-    "#E5C494", "#B3B3B3")
+    "#E5C494", "#B3B3B3"),
+  title = NULL
 )
 }
 \arguments{
@@ -56,6 +57,8 @@ it is possible to create several bedgraph tracks (each containing 1 or more line
 \item{bedgraph_outliers}{Ratio to remove outliers of all bedgraph files. Default is 0 (ie no filter). To remove the first and last percentiles use 0.01.}
 
 \item{colors.lst}{Set of 8 colors used for each files within a list.}
+
+\item{title}{Title of the plot. Default is null (ie no title).}
 }
 \value{
 Plot with domains and other tracks as a list of GenomeGraph tracks (see \code{Gviz::plotTracks} for details).

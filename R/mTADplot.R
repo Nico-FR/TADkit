@@ -33,6 +33,7 @@
 #' @param bedgraph.name Name of the bedgraph track when there is only one track (default = "bedgraph"). Otherwise it takes the names of each list.
 #' @param bedgraph_outliers Ratio to remove outliers of all bedgraph files. Default is 0 (ie no filter). To remove the first and last percentiles use 0.01.
 #' @param colors.lst Set of 8 colors used for each files within a list.
+#' @param title Title of the plot. Default is null (ie no title).
 #'
 #' @return Plot with domains and other tracks as a list of GenomeGraph tracks (see `Gviz::plotTracks` for details).
 #'
@@ -69,7 +70,8 @@ mTADplot <- function(tad.lst, chr, start, stop, tad.id = FALSE,
                      bigwigPath.lst = NULL, bigwig.binwidth = 1e3, bigwig.xaxis = "mean", bigwig.chr = NULL, bigwig.yaxis = NULL,
                      annot.lst = NULL, annot.col = NULL,
                      bedgraph.lst = NULL, bedgraph.name = "bedgraph", bedgraph_outliers = 0,
-                     colors.lst = c("#66C2A5", "#FC8D62", "#8DA0CB", "#E78AC3", "#A6D854", "#FFD92F", "#E5C494", "#B3B3B3")) {
+                     colors.lst = c("#66C2A5", "#FC8D62", "#8DA0CB", "#E78AC3", "#A6D854", "#FFD92F", "#E5C494", "#B3B3B3"),
+                     title = NULL) {
 
   options(ucscChromosomeNames=FALSE)
   V1 <- V2 <- V3 <- V4 <- . <- NULL
@@ -368,11 +370,13 @@ mTADplot <- function(tad.lst, chr, start, stop, tad.id = FALSE,
   #####################################
   #Plot
   #####################################
+  if (!is.null(title)) {main = title} else {main = ""}
   Gviz::plotTracks(c(ideoTrack, ht),
                    groupAnnotation = "group",
                    from = start,
                    to = stop,
-                   background.title = "grey30", grid = TRUE, v = 0
+                   background.title = "grey30", grid = TRUE, v = 0,
+                   main = main
   )
 }
 
