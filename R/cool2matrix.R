@@ -47,16 +47,20 @@ cool2matrix <- function(cool.path, chr, bin.width = NA, balance = FALSE, balanci
         )
     }
 
+    #verif bin.width
     if (!is.na(bin.width)) {
-      #available resolutions
-      ar = (rhdf5::h5ls(cool.path) %>% dplyr::filter(group == "/resolutions"))$name
 
       if (!is.numeric(bin.width)) {
         bin.width = as.numeric(bin.width)
       }
 
+      test_resolution = try(rhdf5::h5readAttributes(file = cool.path, name = uri("")), silent = TRUE)
+
       #if bin.width not available
-      if (is.na(match(bin.width, as.numeric(ar)))) {
+      if (inherits(test_resolution, "try-error")) {
+
+        #available resolutions
+        ar = (rhdf5::h5ls(cool.path) %>% dplyr::filter(group == "/resolutions"))$name
         stop("\n '", bin.width, "' is not an available resolution.", " Resolutions available:\n", ar %>% as.numeric %>% sort %>% paste0(collapse = ", "), ".")
       }
     }
