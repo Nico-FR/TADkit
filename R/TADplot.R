@@ -22,7 +22,7 @@
 #' This track can be group using factors in a specified column of the `annot.gr` files (metadata) otherwise the names of each annotation is used.
 #'
 #' @param tad.gr `GRanges` object with domains. The chromosomes lengths must be stored as metadata (see `dataframes2grange()`).
-#' @param chr Chromosome name to plot.
+#' @param chr Chromosome name needed to filter GRanges.
 #' @param start,stop Region of interest in base pair.
 #' @param tad.id Logical. Default is `FALSE` to label the domain with their sizes `width(tad.gr)` instead of their names `names(tad.gr)`.
 #' @param bigwig.path Path for the bigwig file plotted as histogram. Default = `NULL` (i.e the track is not plotted). Note that bigwig file can not be read on Windows.
