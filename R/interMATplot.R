@@ -1,10 +1,10 @@
-#' @title Plot interaction matrix
+#' @title Plot intra-chromosomal interaction matrix
 #'
-#' @description `MATplot` allow to plot matrix with 2 types of annotations:
+#' @description `interMATplot` allow to plot matrix with 2 types of annotations:
 #' * domains (e.g. TADs or compartments): plot as triangles and/or lines on the upper or/and lower part of the matrix.
 #' * interactions between domains/bins (e.g. loops): plot as squares on the upper and lower part of the matrix.
 #'
-#' @details The matrix input must be a `Matrix` or a `matrix` object for only one chromosome (see `cool2matrix()` function to read cool files).
+#' @details The matrix input must be a `Matrix` or a `matrix` object with interactions from 2 chromosome (i.e. inter-chromosomal interaction).
 #' All domains (TADs or compartments) are bed files (3 columns: chr, start and end) and can be R object (`dataframe` or `GRanges`) or the path of the files.
 #' For `tad.lines`, another column can be used to specify different classes of domains (e.g compartment A or B). To use those domain classes, specify the column number (of the `tad.upper.line` and `tad.lower.line` inputs) with `tad.line.col` parameter and a custom set of colors with `line.colors` parameter.
 #' Loop are stored in bedpe files (6 columns: chr1, start1, end, chr2, start2 and end2) and can be a `dataframe` object or the path of the file.
