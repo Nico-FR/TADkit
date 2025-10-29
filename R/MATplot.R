@@ -4,15 +4,14 @@
 #' * domains (e.g. TADs or compartments): plot as triangles and/or lines on the upper or/and lower part of the matrix.
 #' * interactions between domains/bins (e.g. loops): plot as squares on the upper and lower part of the matrix.
 #'
-#' @details The matrix input must be a `Matrix` or a `matrix` object for only one chromosome (see `cool2matrix()` function to read cool files).
+#' @details The matrix input must be a `Matrix` or a `matrix` object for only one chromosome (see `cool2matrix()` function to read cool files). Only the upper part of the matrix is used to plot the full matrix (as symmetrical).
 #' All domains (TADs or compartments) are bed files (3 columns: chr, start and end) and can be R object (`dataframe` or `GRanges`) or the path of the files.
 #' For `tad.lines`, another column can be used to specify different classes of domains (e.g compartment A or B). To use those domain classes, specify the column number (of the `tad.upper.line` and `tad.lower.line` inputs) with `tad.line.col` parameter and a custom set of colors with `line.colors` parameter.
 #' Loop are stored in bedpe files (6 columns: chr1, start1, end, chr2, start2 and end2) and can be a `dataframe` object or the path of the file.
 #' Chromosome domains and loops can be filter using `tad.chr` parameter.
 #'
-#' @inheritParams matObsExp
-#' @inheritParams TADplot
-#' @param matrix `dgCMatrix` or `matrix` object for only one chromosome.
+#' @param matrix `dgCMatrix` or `matrix` object with intra-chromosomal interactions (i.e. symmetrical matrix).
+#' @param start,stop Region of interest in base pair on y-axis. Default is NULL to plot all the chromosome.
 #' @param bin.width Bin width of the matrix in base pair.
 #' @param matrix.diag logical. Weather or not to plot diagonal values of the matrix. Default = `TRUE`.
 #' @param log2 logical. Use the log2 of the matrix values. Default is `TRUE`.
@@ -57,8 +56,8 @@
 #' comp.gr = PC1calling(PC1_250kb.gr)
 #'
 #' MATplot(mat_HCT116_chr19_50kb,
-#'     start = 5e6, stop = 15e6,
 #'     bin.width = 50e3, log2 = TRUE,
+#'     start = 5e6, stop = 15e6,
 #'     scale.colors = "H", #color of matrix, try "D" or "H"
 #'     tad.upper.tri = domains.gr,
 #'     tad.chr = "chr19")
@@ -75,7 +74,7 @@
 #'     tad.line.col = 1, #used first metadata column with compartments A or B
 #'     tad.chr = "chr19")
 
-MATplot <- function(matrix, start, stop, bin.width, log2 = T, scale.colors = "H", matrix.diag = T, scale.limits = NULL,
+MATplot <- function(matrix, bin.width, start = NULL, stop = NULL, log2 = T, scale.colors = "H", matrix.diag = T, scale.limits = NULL,
                     tad.upper.tri = NULL, tad.lower.tri = NULL, loop.bedpe = NULL, tad.chr = NULL, annotations.color = "red",
                     tad.upper.line = NULL, tad.lower.line = NULL, tad.line.col = NULL, line.colors = c("red", "blue")) {
 
@@ -84,6 +83,10 @@ MATplot <- function(matrix, start, stop, bin.width, log2 = T, scale.colors = "H"
   #sanity check
   if(!inherits(matrix, c("Matrix", "matrix"))) {
     stop("input matrix is not a matrix or dgCMatrix object")}
+
+  #starts and stops if NULLs
+  if (is.null(start)) {start = 1}
+  if (is.null(stop)) {stop = nrow(matrix) * bin.width}
 
   #bin to read
   from = start %/% bin.width + 1 ; to = stop %/% bin.width #nb bin
@@ -97,7 +100,7 @@ MATplot <- function(matrix, start, stop, bin.width, log2 = T, scale.colors = "H"
 
   #squish
   if (!is.null(scale.limits)) {
-    if (length(scale.limits) != 2) {stop("scale.limits must be a vector with 2 values")}
+    if (length(scale.limits) != 2) {stop("scale.limits must be a vector with 2 values (min and max)")}
     mat@x = scales::oob_squish_any(mat@x, range = scale.limits)}
 
   #melt matrix
@@ -109,13 +112,17 @@ MATplot <- function(matrix, start, stop, bin.width, log2 = T, scale.colors = "H"
   if(matrix.diag) {melted_mat = rbind(upper_mat, lower_mat, diag_mat)} else {melted_mat = rbind(upper_mat, lower_mat)}
 
   #add genomic coordinates
-  melted_mat$j = (melted_mat$j + from - 1) * bin.width - bin.width / 2
-  melted_mat$i = (melted_mat$i + from - 1) * - bin.width + bin.width / 2
+  melted_mat = melted_mat %>%
+    dplyr::rename(c("y" = "i", "x" = "j", "i" = "x")) %>% #rename to avoid confusion
+    dplyr::mutate(x = (x + from - 1.5) * bin.width) %>%  # genomic coordinates = center of the bin (needed for geom_tile)
+    dplyr::mutate(y = -(y + from - 1.5) * bin.width)
 
-  #geom_tile
-  p = ggplot2::ggplot()+ggplot2::geom_tile(data = melted_mat, ggplot2::aes(y = i, x = j, fill = x))+
-    ggplot2::scale_x_continuous(labels = scales::unit_format(unit = "Mb", scale = 1e-6), limits = c(start, stop))+
-    ggplot2::scale_y_continuous(labels = scales::unit_format(unit = "Mb", scale = 1e-6), limits = c(-stop, -start))+
+  # geom_tile plot
+  p = ggplot2::ggplot()+ggplot2::geom_tile(data = melted_mat, ggplot2::aes(y = y, x = x, fill = i))+
+    ggplot2::scale_x_continuous(labels = scales::unit_format(unit = "Mb", scale = 1e-6),
+                                limits = c(min(melted_mat$x - bin.width / 2), max(melted_mat$x + bin.width / 2)))+ #limit to match geom_tile centers
+    ggplot2::scale_y_continuous(labels = scales::unit_format(unit = "Mb", scale = 1e-6),
+                                limits = c(max(melted_mat$y + bin.width / 2), min(melted_mat$y - bin.width / 2)))+
     ggplot2::coord_fixed()+ggplot2::theme(axis.title.x = ggplot2::element_blank(), axis.title.y = ggplot2::element_blank(), legend.title = ggplot2::element_blank())
 
   #scales colors
@@ -291,8 +298,8 @@ MATplot <- function(matrix, start, stop, bin.width, log2 = T, scale.colors = "H"
 
     names(loop) = c("chr1", "start1", "end1", "chr2", "start2", "end2")
     if (is.null(tad.chr)) {
-      loop <- dplyr::filter(loop, start1 >= start, end1 < stop, start2 > start, end2 < stop)} else {
-        loop <- dplyr::filter(loop, chr1 == tad.chr, chr2 == tad.chr, start1 >= start, end1 < stop, start2 > start, end2 < stop)}
+      loop <- dplyr::filter(loop, start1 >= start, end1 <= stop, start2 >= start, end2 <= stop)} else {
+        loop <- dplyr::filter(loop, chr1 == tad.chr, chr2 == tad.chr, start1 >= start, end1 <= stop, start2 >= start, end2 <= stop)}
 
 
     p = p + ggplot2::geom_rect(data = loop, ggplot2::aes(xmin = start2, xmax = end2, ymin = -start1, ymax = -end1), fill = NA, color = annotations.color, size = 0.3)+
