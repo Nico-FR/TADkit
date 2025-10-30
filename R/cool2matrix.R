@@ -12,8 +12,9 @@
 #' @param bin.width Bin width in base pair (i.e resolution) for mcool file only. Default is `NA` to parse cool file.
 #' @param chr The selected chromosome.
 #' @param balance Logical. Weather or not to use balanced counts instead of raw counts. Default = `FALSE`.
-#' @param balancing_name Character that must correspond to the name given to the normalization method used. The most common names (for HiC normalisation) are "weight" (default), "KR", "VC".
+#' @param balancing_name Character that must correspond to the name given to the normalization method used. The most common names (for HiC normalization) are "weight" (default), "KR", "VC".
 #' @param verbose Logical. Whether or not to print messages. Default = `TRUE`.
+#' @param chr2 The second chromosome to extract inter-chromosomal interactions. This chromosome will be represented in the columns of the extracted matrix (i.e. x axis). Default is `NULL` (intra-chromosomal interactions).
 #'
 #' @return A `dgCMatrix` object: upper triangular and sparse Matrix
 #'
