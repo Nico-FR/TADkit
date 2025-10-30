@@ -232,8 +232,7 @@ MATplot <- function(matrix, bin.width, start = NULL, stop = NULL, log2 = T, scal
     tad$s2 <- ifelse(tad$s <= start, start, tad$s)
 
     p = p + ggplot2::geom_segment(data = tad, ggplot2::aes(x = s2, y = -start, xend = e2, yend = -start, col = col), size = 1.5)+
-      ggplot2::geom_segment(data = tad, ggplot2::aes(x = stop, y = -s2, xend = stop, yend = -e2, col = col), size = 1.5)+
-      ggplot2::scale_colour_manual(values = line.colors)
+      ggplot2::geom_segment(data = tad, ggplot2::aes(x = stop, y = -s2, xend = stop, yend = -e2, col = col), size = 1.5)
   }
 
   #lower line
@@ -276,13 +275,12 @@ MATplot <- function(matrix, bin.width, start = NULL, stop = NULL, log2 = T, scal
     tad$e2 <- ifelse(tad$e >= stop, stop, tad$e)
     tad$s2 <- ifelse(tad$s <= start, start, tad$s)
 
-    if (is.null(tad.chr)) {
-      tad <- dplyr::filter(tad, e > start, s < stop)} else {
-        tad <- dplyr::filter(tad, chr == tad.chr, e > start, s < stop)}
-
     p = p + ggplot2::geom_segment(data = tad, ggplot2::aes(x = start, y = -s2, xend = start, yend = -e2, col = col), size = 1)+
-      ggplot2::geom_segment(data = tad, ggplot2::aes(x = s2, y = -stop, xend = e2, yend = -stop, col = col), size = 1)+
-      ggplot2::scale_colour_manual(values = line.colors)
+      ggplot2::geom_segment(data = tad, ggplot2::aes(x = s2, y = -stop, xend = e2, yend = -stop, col = col), size = 1)
+  }
+
+  if (!is.null(tad.x.line) | !is.null(tad.y.line)) {
+    p = p + ggplot2::scale_color_manual(values = line.colors)
   }
 
   #loop
