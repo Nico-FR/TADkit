@@ -15,7 +15,7 @@ MATfeatures(
 )
 }
 \arguments{
-\item{matrix}{\code{dgCMatrix} or \code{matrix} object for only one chromosome.}
+\item{matrix}{\code{dgCMatrix} or \code{matrix} object with intra-chromosomal interactions (i.e. symmetrical matrix).}
 
 \item{bin.width}{Bin width of the matrix in base pair.}
 

@@ -22,7 +22,6 @@
 matExpDist <- function(matrix.lst, bin.width,
                        colors.lst = c("#66C2A5", "#FC8D62", "#8DA0CB", "#E78AC3", "#A6D854", "#FFD92F", "#E5C494", "#B3B3B3")) {
 
-  i <- j <- expected <- distance <- matrix <- . <- x <- NULL
   #sanity check
   if (!is.list(matrix.lst)) {
     stop("matrix.lst must be a list")

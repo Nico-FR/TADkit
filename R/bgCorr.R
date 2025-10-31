@@ -22,8 +22,6 @@
 #'
 bgCorr <- function(bedgraph.lst, method = "pearson", rm_chr = "X", Qnorm = FALSE) {
 
-  . <- NULL
-
   #Stop if bedgraphPath is not a list
   if (!is.list(bedgraph.lst)) {
     stop("bedgraph.lst must be a list")

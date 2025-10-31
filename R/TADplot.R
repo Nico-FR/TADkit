@@ -69,7 +69,7 @@
 #' )
 TADplot <- function(tad.gr, chr, start, stop, tad.id = FALSE,
                     bigwig.path = NULL, bigwig.binwidth = 1e3, bigwig.xaxis = "mean", bigwig.chr = NULL, bigwig.yaxis = NULL,
-                    annot.gr = NULL, annot.col = NULL, bedgraph = NULL) {
+                    annot.gr = NULL, annot.col = NULL, bedgraph = NULL, title = NULL) {
 
   options(ucscChromosomeNames=FALSE)
 

@@ -56,9 +56,6 @@
 #'
 domainHist <- function(domain.gr, annot.gr, annot.boundary = "start", ifoverlap = "remove", annot.strand = FALSE, bin.width = 5, output = "plot") {
 
-  #local variables:
-  mixed_position <- zscore <- NULL
-
   if (is.na(mean(seqlengths(domain.gr), na.rm=T))) {
     stop("domain.gr must have seqlengths datas (see dataframes2grange function)")
   }

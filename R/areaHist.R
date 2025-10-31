@@ -62,9 +62,6 @@
 #' }
 areaHist <- function(data.gr, annot.boundary = "center", annot.strand = TRUE, bin.width = NULL) {
 
-  #local variables:
-  count <- NULL
-
   window.size <- unique(data.gr$window.size) # window.size used in TADarea function
   GenomeInfoDb::seqlengths(data.gr) <- NA # remove seqlengths to prevent out-of-bound ranges
 

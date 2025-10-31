@@ -36,9 +36,6 @@
 #'
 compOrientation <- function(bedgraph.gr, annot.gr, expression.data.frame) {
 
-  #local variables:
-  comp <- chr <- med_exp <- A <- B <- . <- NULL
-
   #sanity check
   if (is.null(names(annot.gr))) {
     stop("annot.gr object must have names (i.e gene IDs)")

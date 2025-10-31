@@ -28,8 +28,6 @@
 #'
 MATfeatures <- function(matrix, bin.width, annot.gr, chr, annot.boundary = "start", window.size = NULL, output = "matrix") {
 
-  i <- j <- x <- NULL
-
   ############################################################
   #sanity check
   if(!inherits(matrix, c("Matrix", "matrix"))) {

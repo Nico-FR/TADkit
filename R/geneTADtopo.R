@@ -43,9 +43,6 @@
 #'
 geneTADtopo <- function(domain.gr, annot.gr, ifoverlap = "best", expression.data.frame = NULL) {
 
-  #local variables:
-  nameHit <- nb_genes <- gene_strands <- nb_TADs <- NULL
-
   if (is.null(names(domain.gr))) {
     names(domain.gr) = 1:length(domain.gr)
   }

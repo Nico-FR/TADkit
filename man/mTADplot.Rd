@@ -28,7 +28,7 @@ mTADplot(
 \arguments{
 \item{tad.lst}{List of GRange object with domains. Those files must have chromosomes lengths (see dataframes2grange function).}
 
-\item{chr}{Chromosome name to plot.}
+\item{chr}{Chromosome name needed to filter GRanges.}
 
 \item{start, stop}{Region of interest in base pair.}
 

@@ -42,13 +42,6 @@
 viewPointInteract <- function(matrix.lst, bin.width, vp.start, vp.stop, output = "GRanges", start = NULL, stop = NULL, self_interaction = FALSE, Qnorm = FALSE, log2 = FALSE,
                               seqname = "1", colors.lst = c("#66C2A5", "#FC8D62", "#8DA0CB", "#E78AC3", "#A6D854", "#FFD92F", "#E5C494", "#B3B3B3")) {
 
-  #matrix.lst = mat.lst
-  #bin.width = 4e3
-  #vp.start = 2380000; vp.stop = 2730000
-  #output = "plot"; self_interaction = F; Qnorm = F;log2 = TRUE
-  #start = 2.06e6; stop = 3.06e6
-
-  mean_interact <- . <- NULL
   #sanity check
   if (!is.list(matrix.lst)) {
     stop("matrix.lst must be a list")

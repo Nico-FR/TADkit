@@ -17,13 +17,14 @@ TADplot(
   bigwig.yaxis = NULL,
   annot.gr = NULL,
   annot.col = NULL,
-  bedgraph = NULL
+  bedgraph = NULL,
+  title = NULL
 )
 }
 \arguments{
 \item{tad.gr}{\code{GRanges} object with domains. The chromosomes lengths must be stored as metadata (see \code{dataframes2grange()}).}
 
-\item{chr}{Chromosome name to plot.}
+\item{chr}{Chromosome name needed to filter GRanges.}
 
 \item{start, stop}{Region of interest in base pair.}
 

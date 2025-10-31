@@ -45,9 +45,6 @@
 #'
 domainCov <- function(domain.gr, annot.gr, domain.col = NULL, annot.col = NULL, bin.width = 50e3, norm = FALSE, output = "plot") {
 
-  #local variables:
-  density <- relative_position <- zscore <- NULL
-
   #annot.col parameter
   nb_metadatacolumns = length(GenomicRanges::mcols(annot.gr))
   if (is.null(annot.col)) {

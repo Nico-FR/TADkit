@@ -7,9 +7,9 @@
 mMATplot(
   matrix.upper,
   matrix.lower,
-  start,
-  stop,
   bin.width,
+  start = NULL,
+  stop = NULL,
   log2 = TRUE,
   scale.colors = "H",
   scale.limits = NULL,
@@ -27,11 +27,11 @@ mMATplot(
 )
 }
 \arguments{
-\item{matrix.upper, matrix.lower}{\code{dgCMatrix} or \code{matrix} object for only one chromosome.}
-
-\item{start, stop}{Region of interest in base pair.}
+\item{matrix.upper, matrix.lower}{\code{dgCMatrix} or \code{matrix} object with intra-chromosomal interactions (i.e. symmetrical matrix).}
 
 \item{bin.width}{Bin width of the matrix in base pair.}
+
+\item{start, stop}{Region of interest in base pair on y-axis. Default is NULL to plot all the chromosome.}
 
 \item{log2}{logical. Use the log2 of the matrix values. Default is \code{TRUE}.}
 
@@ -71,7 +71,7 @@ mMATplot(
 \code{ggplot}
 }
 \description{
-Same as \code{MATplot()} function but \code{mMATplot()} allow to plot 2 different matrices on the upper and lower part of the plot.
+Same as \code{MATplot()} function but \code{mMATplot()} allow to plot 2 matrices on the upper and lower part of the plot.
 Two types of annotations can be added:
 \itemize{
 \item domains (e.g. TADs or compartments): plot as triangles or lines on the upper or/and lower part of the matrix.
@@ -79,7 +79,7 @@ Two types of annotations can be added:
 }
 }
 \details{
-The matrix input must be a \code{Matrix} or a \code{matrix} object for only one chromosome (see \code{cool2matrix()} function to read cool files).
+The matrix input must be a \code{Matrix} or a \code{matrix} object for only one chromosome (see \code{cool2matrix()} function to read cool files). Only the upper part of the matrices is used to produce the plot.
 All domains (TADs or compartments) are bed files (3 columns: chr, start and end) and can be R object (\code{dataframe} or \code{GRanges}) or the path of the files.
 For \code{tad.lines}, another column can be used to specify different classes of domains (e.g compartment A or B). To use those domain classes, specify the column number (of the \code{tad.upper.line} and \code{tad.lower.line} inputs) with \code{tad.line.col} parameter and a custom set of colors with \code{line.colors} parameter.
 Loop are stored in bedpe files (6 columns: chr1, start1, end, chr2, start2 and end2) and can be a \code{dataframe} object or the path of the file.

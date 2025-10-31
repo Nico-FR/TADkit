@@ -57,9 +57,6 @@ mMATplot <- function(matrix.upper, matrix.lower, bin.width, start = NULL, stop =
                     tad.upper.tri = NULL, tad.lower.tri = NULL, loop.bedpe = NULL, tad.chr = NULL, annotations.color = "red",
                     tad.upper.line = NULL, tad.lower.line = NULL, tad.line.col = NULL, line.colors = c("red", "blue")) {
 
-  #local variables:
-  i <- j <- x <- e <- s <- chr <- e2 <- s2 <-start1 <- end1 <- start2 <- end2 <- chr1 <- chr2 <- NULL
-
   #starts and stops if NULLs
   if (is.null(start)) {start = 1}
   if (is.null(stop)) {stop = nrow(matrix) * bin.width}
@@ -281,7 +278,7 @@ mMATplot <- function(matrix.upper, matrix.lower, bin.width, start = NULL, stop =
       ggplot2::geom_segment(data = tad, ggplot2::aes(x = s2, y = -stop, xend = e2, yend = -stop, col = col), size = 1)
   }
 
-  if (!is.null(tad.x.line) | !is.null(tad.y.line)) {
+  if (!is.null(tad.upper.line) | !is.null(tad.lower.line)) {
     p = p + ggplot2::scale_color_manual(values = line.colors)
   }
 
