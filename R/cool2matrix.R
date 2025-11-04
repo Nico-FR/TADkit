@@ -33,9 +33,9 @@ cool2matrix <- function(cool.path, chr, bin.width = NA, balance = FALSE, balanci
 
   ###################
   #cool.path = "~/mnt/genome3D/Var_struc/Mouton_onCow/Contact_maps/Distiller_Arima/norm/mcool/mouton8045.ARS-UCD1.2.mapq_10.4000.mcool"
-  #chr = 1
-  #chr2 = NULL
-  #bin.width = 64000
+  #chr = 19
+  #chr2 = 20
+  #bin.width = 128000
   #balance = TRUE; balancing_name = "weight"; verbose = TRUE
   ###################
 
@@ -84,8 +84,10 @@ cool2matrix <- function(cool.path, chr, bin.width = NA, balance = FALSE, balanci
     }
 
     rank_1 = match(chr, chromosomes) #rank of chr in chromosomes list
+    flip.mat = FALSE #indicator to know if the matrix need to be flipped at the end (only needed if chr2 is before chr1 in the chromosomes list).
+
     if (!is.null(chr2)) {
-      rank_2 = match(chr2, chromosomes) #rank of chr2 in chromosomes list
+      rank_2 =  match(chr2, chromosomes) #rank of chr2 in chromosomes list
 
       #check that rank_1 < ran_2
       if (!rank_1 < rank_2) { #need to switch chr order to match cool file
@@ -93,22 +95,19 @@ cool2matrix <- function(cool.path, chr, bin.width = NA, balance = FALSE, balanci
         rank_1.tmp = rank_1
         rank_1 = rank_2
         rank_2 = rank_1.tmp
-      } else {
-        flip.mat = FALSE
       }
     }
 
     # Fetch first bin IDs of chr
     chrom1_offset = rhdf5::h5read(file = cool.path, name = uri("indexes/chrom_offset"))[rank_1:(rank_1 + 1)] + 1 #first bin ID (ie bin number) of chr & first bin ID of next chromosome
     chrom1_first_bin_index = rhdf5::h5read(file = cool.path, name = uri("indexes/bin1_offset"))[chrom1_offset[1]] + 1 #first occurrence (ie line number = index) of first bin of chr in pixel table
+    chrom1_last_bin_index = rhdf5::h5read(file = cool.path, name = uri("indexes/bin1_offset"))[chrom1_offset[2]] #last occurrence (ie line number = index) of last bin of chr in pixel table
 
-    # Fetch last bin IDs of chr or chr2
-    if (is.null(chr2)) { #if only one chromosome
+    # Fetch chrom offset chr2
+    if (is.null(chr2)) { #if intra chromosome
       chrom2_offset = chrom1_offset
-      chrom2_last_bin_index = rhdf5::h5read(file = cool.path, name = uri("indexes/bin1_offset"))[chrom1_offset[2] - 1] #first occurrence (ie line number = index) of last bin of chr in pixel table
-    } else { #if two chromosomes
+    } else { #if inter chromosomes
       chrom2_offset = rhdf5::h5read(file = cool.path, name = uri("indexes/chrom_offset"))[rank_2:(rank_2 + 1)] + 1 #first bin ID (ie bin number) of chr2 & first bin ID of next chromosome
-      chrom2_last_bin_index = rhdf5::h5read(file = cool.path, name = uri("indexes/bin1_offset"))[chrom2_offset[2] - 1] #first occurrence (ie line number = index) of last bin of chr2 in pixel table
     }
 
     # number of bins for each chromosome
@@ -116,17 +115,27 @@ cool2matrix <- function(cool.path, chr, bin.width = NA, balance = FALSE, balanci
     nb_bin_chr2 = chrom2_offset[2] - chrom2_offset[1]
 
     if (verbose) {
-      size_message = if(flip.mat) {paste0(nb_bin_chr2, "x", nb_bin_chr1)} else {paste0(nb_bin_chr1, "x", nb_bin_chr2)}
-      if (!is.na(bin.width)) {
+
+      # matrix dimensions message
+      size_message = if(flip.mat) {
+        paste0(nb_bin_chr2, "x", nb_bin_chr1) # if matrix will be flipped
+      } else {
+          paste0(nb_bin_chr1, "x", nb_bin_chr2) # if matrix will not be flippedchrom2_last_bin_index
+      }
+
+      # print message
+      if (!is.na(bin.width)) { # mcool file
         message(
-          paste0("Parsing .mcool file as ", size_message, " matrix at ", bin.width, " bp resolution."))}
-      else {message(paste0("Parsing .cool file as ", size_message, " matrix at ", bin.width, " bp resolution."))}
+          paste0("Parsing .mcool file as ", size_message, " matrix at ", bin.width, " bp resolution."))
+      } else { # cool file
+          message(paste0("Parsing .cool file as ", size_message, " matrix at ", bin.width, " bp resolution."))
+        }
     }
 
     # Read the pixels data (3 col tables) for chr
-    bin1_id = rhdf5::h5read(file = cool.path, name = uri("pixels/bin1_id"), index = list(chrom1_first_bin_index:chrom2_last_bin_index))
-    bin2_id = rhdf5::h5read(file = cool.path, name = uri("pixels/bin2_id"), index = list(chrom1_first_bin_index:chrom2_last_bin_index))
-    interactions = rhdf5::h5read(file = cool.path, name = uri("pixels/count"), index = list(chrom1_first_bin_index:chrom2_last_bin_index))
+    bin1_id = rhdf5::h5read(file = cool.path, name = uri("pixels/bin1_id"), index = list(chrom1_first_bin_index:chrom1_last_bin_index))
+    bin2_id = rhdf5::h5read(file = cool.path, name = uri("pixels/bin2_id"), index = list(chrom1_first_bin_index:chrom1_last_bin_index))
+    interactions = rhdf5::h5read(file = cool.path, name = uri("pixels/count"), index = list(chrom1_first_bin_index:chrom1_last_bin_index))
 
     melted.mat = data.frame(bin1_id = bin1_id + 1,
                             bin2_id = bin2_id + 1, #convert to 1based bin IDs
