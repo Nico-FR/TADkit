@@ -89,6 +89,10 @@ MATplot <- function(matrix, bin.width, start = NULL, stop = NULL, log2 = T, scal
   #bin to read
   from = start %/% bin.width + 1 ; to = stop %/% bin.width #nb bin
 
+  # graphical limits
+  min_graph = (from - 1) * bin.width
+  max_graph = to * bin.width
+
   #filter matrix area
   mat = as(Matrix::triu(matrix[from:to, from:to]), "CsparseMatrix")
   mat[Matrix::triu(mat == 0)] <- NA
@@ -101,12 +105,12 @@ MATplot <- function(matrix, bin.width, start = NULL, stop = NULL, log2 = T, scal
     if (length(scale.limits) != 2) {stop("scale.limits must be a vector with 2 values (min and max)")}
     mat@x = scales::oob_squish_any(mat@x, range = scale.limits)}
 
-  #melt matrix
+  #melt matrices (upper, diagonal and lower)
   upper_mat = Matrix::summary(Matrix::triu(mat, 1))
   diag_mat = data.frame(i = 1:nrow(mat), j = 1:nrow(mat), x = Matrix::diag(mat))
   lower_mat = data.frame(i = upper_mat$j, j = upper_mat$i, x = upper_mat$x) #Matrix::summary(Matrix::tril(BiocGenerics::t(mat), -1))
 
-  #diag
+  #merge melted matrices
   if(matrix.diag) {melted_mat = rbind(upper_mat, lower_mat, diag_mat)} else {melted_mat = rbind(upper_mat, lower_mat)}
 
   #add genomic coordinates
@@ -118,9 +122,9 @@ MATplot <- function(matrix, bin.width, start = NULL, stop = NULL, log2 = T, scal
   # geom_tile plot
   p = ggplot2::ggplot()+ggplot2::geom_tile(data = melted_mat, ggplot2::aes(y = y, x = x, fill = i))+
     ggplot2::scale_x_continuous(labels = scales::unit_format(unit = "Mb", scale = 1e-6),
-                                limits = c(min(melted_mat$x - bin.width / 2), max(melted_mat$x + bin.width / 2)))+ #limit to match geom_tile centers
+                                limits = c(min_graph, max_graph))+
     ggplot2::scale_y_continuous(labels = scales::unit_format(unit = "Mb", scale = 1e-6),
-                                limits = c(max(melted_mat$y + bin.width / 2), min(melted_mat$y - bin.width / 2)))+
+                                limits = c(-min_graph, -max_graph))+
     ggplot2::coord_fixed()+ggplot2::theme(axis.title.x = ggplot2::element_blank(), axis.title.y = ggplot2::element_blank(), legend.title = ggplot2::element_blank())
 
   #scales colors
@@ -151,11 +155,11 @@ MATplot <- function(matrix, bin.width, start = NULL, stop = NULL, log2 = T, scal
 
     names(tad) = c("chr", "s", "e")
     if (is.null(tad.chr)) {
-      tad <- dplyr::filter(tad, e > start, s < stop)} else {
-        tad <- dplyr::filter(tad, chr == tad.chr, e > start, s < stop)}
+      tad <- dplyr::filter(tad, e > min_graph, s < max_graph)} else {
+        tad <- dplyr::filter(tad, chr == tad.chr, e > min_graph, s < max_graph)}
 
-    tad$e2 <- ifelse(tad$e >= stop, stop, tad$e)
-    tad$s2 <- ifelse(tad$s <= start, start, tad$s)
+    tad$e2 <- ifelse(tad$e >= max_graph, max_graph, tad$e)
+    tad$s2 <- ifelse(tad$s <= min_graph, min_graph, tad$s)
 
     p = p + ggplot2::geom_segment(data = tad, ggplot2::aes(x = s, y = -s, xend = e2, yend = -s2), color = annotations.color, size = 0.3)+
       ggplot2::geom_segment(data = tad, ggplot2::aes(x = e2, y = -s2, xend = e, yend = -e), color = annotations.color, size = 0.3)
@@ -178,11 +182,11 @@ MATplot <- function(matrix, bin.width, start = NULL, stop = NULL, log2 = T, scal
 
     names(tad) = c("chr", "s", "e")
     if (is.null(tad.chr)) {
-      tad <- dplyr::filter(tad, e > start, s < stop)} else {
-        tad <- dplyr::filter(tad, chr == tad.chr, e > start, s < stop)}
+      tad <- dplyr::filter(tad, e > min_graph, s < max_graph)} else {
+        tad <- dplyr::filter(tad, chr == tad.chr, e > min_graph, s < max_graph)}
 
-    tad$e2 <- ifelse(tad$e >= stop, stop, tad$e)
-    tad$s2 <- ifelse(tad$s <= start, start, tad$s)
+    tad$e2 <- ifelse(tad$e >= max_graph, max_graph, tad$e)
+    tad$s2 <- ifelse(tad$s <= min_graph, min_graph, tad$s)
 
     p = p + ggplot2::geom_segment(data = tad, ggplot2::aes(x = s2, y = -e2, xend = e, yend = -e), color = annotations.color, size = 0.3)+
       ggplot2::geom_segment(data = tad, ggplot2::aes(x = s, y = -s, xend = s2, yend = -e2), color = annotations.color, size = 0.3)
@@ -222,15 +226,15 @@ MATplot <- function(matrix, bin.width, start = NULL, stop = NULL, log2 = T, scal
     names(tad) = c("chr", "s", "e", "col")
     tad$col = as.factor(tad$col)
     if (is.null(tad.chr)) {
-      tad <- dplyr::filter(tad, e > start, s < stop)} else {
-        tad <- dplyr::filter(tad, chr == tad.chr, e > start, s < stop)
+      tad <- dplyr::filter(tad, e > min_graph, s < max_graph)} else {
+        tad <- dplyr::filter(tad, chr == tad.chr, e > min_graph, s < max_graph)
       }
 
-    tad$e2 <- ifelse(tad$e >= stop, stop, tad$e)
-    tad$s2 <- ifelse(tad$s <= start, start, tad$s)
+    tad$e2 <- ifelse(tad$e >= max_graph, max_graph, tad$e)
+    tad$s2 <- ifelse(tad$s <= min_graph, min_graph, tad$s)
 
-    p = p + ggplot2::geom_segment(data = tad, ggplot2::aes(x = s2, y = -start, xend = e2, yend = -start, col = col), size = 1.5)+
-      ggplot2::geom_segment(data = tad, ggplot2::aes(x = stop, y = -s2, xend = stop, yend = -e2, col = col), size = 1.5)
+    p = p + ggplot2::geom_segment(data = tad, ggplot2::aes(x = s2, y = -min_graph, xend = e2, yend = -min_graph, col = col), size = 1.5)+
+      ggplot2::geom_segment(data = tad, ggplot2::aes(x = max_graph, y = -s2, xend = max_graph, yend = -e2, col = col), size = 1.5)
   }
 
   #lower line
@@ -266,15 +270,15 @@ MATplot <- function(matrix, bin.width, start = NULL, stop = NULL, log2 = T, scal
     names(tad) = c("chr", "s", "e", "col")
     tad$col = as.factor(tad$col)
     if (is.null(tad.chr)) {
-      tad <- dplyr::filter(tad, e > start, s < stop)} else {
-        tad <- dplyr::filter(tad, chr == tad.chr, e > start, s < stop)
+      tad <- dplyr::filter(tad, e > min_graph, s < max_graph)} else {
+        tad <- dplyr::filter(tad, chr == tad.chr, e > min_graph, s < max_graph)
       }
 
-    tad$e2 <- ifelse(tad$e >= stop, stop, tad$e)
-    tad$s2 <- ifelse(tad$s <= start, start, tad$s)
+    tad$e2 <- ifelse(tad$e >= max_graph, max_graph, tad$e)
+    tad$s2 <- ifelse(tad$s <= min_graph, min_graph, tad$s)
 
-    p = p + ggplot2::geom_segment(data = tad, ggplot2::aes(x = start, y = -s2, xend = start, yend = -e2, col = col), size = 1)+
-      ggplot2::geom_segment(data = tad, ggplot2::aes(x = s2, y = -stop, xend = e2, yend = -stop, col = col), size = 1)
+    p = p + ggplot2::geom_segment(data = tad, ggplot2::aes(x = min_graph, y = -s2, xend = min_graph, yend = -e2, col = col), size = 1)+
+      ggplot2::geom_segment(data = tad, ggplot2::aes(x = s2, y = -max_graph, xend = e2, yend = -max_graph, col = col), size = 1)
   }
 
   if (!is.null(tad.upper.line) | !is.null(tad.upper.line)) {
@@ -294,8 +298,8 @@ MATplot <- function(matrix, bin.width, start = NULL, stop = NULL, log2 = T, scal
 
     names(loop) = c("chr1", "start1", "end1", "chr2", "start2", "end2")
     if (is.null(tad.chr)) {
-      loop <- dplyr::filter(loop, start1 >= start, end1 <= stop, start2 >= start, end2 <= stop)} else {
-        loop <- dplyr::filter(loop, chr1 == tad.chr, chr2 == tad.chr, start1 >= start, end1 <= stop, start2 >= start, end2 <= stop)}
+      loop <- dplyr::filter(loop, start1 >= min_graph, end1 <= max_graph, start2 >= min_graph, end2 <= max_graph)} else {
+        loop <- dplyr::filter(loop, chr1 == tad.chr, chr2 == tad.chr, start1 >= min_graph, end1 <= max_graph, start2 >= min_graph, end2 <= max_graph)}
 
 
     p = p + ggplot2::geom_rect(data = loop, ggplot2::aes(xmin = start2, xmax = end2, ymin = -start1, ymax = -end1), fill = NA, color = annotations.color, size = 0.3)+
