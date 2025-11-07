@@ -57,8 +57,14 @@ interMATplot <- function(matrix, bin.width, start_y = NULL, stop_y = NULL, start
                     tad.x.tri = NULL, tad.y.tri = NULL, loop.bedpe = NULL, tad.chr_x = NULL, tad.chr_y = NULL, annotations.color = "red",
                     tad.x.line = NULL, tad.y.line = NULL, tad.line.col = NULL, line.colors = c("red", "blue")) {
 
-  #local variables:
-  i <- j <- x <- e <- s <- chr <- e2 <- s2 <-start1 <- end1 <- start2 <- end2 <- chr1 <- chr2 <- NULL
+  #matrix = cool2matrix(cattle.files$norm_mcool, chr = 25, chr2 = 26, bin.width = 128000,
+   #                    balance = FALSE, verbose = TRUE)
+  #bin.width = 128e3; start_y = NULL; stop_y = 40e6; start_x = NULL; stop_x = 50e6; log2 = T; scale.colors = "H"; scale.limits = NULL;
+  #tad.x.tri = NULL; tad.y.tri = NULL; loop.bedpe = NULL; tad.chr_x = NULL; tad.chr_y = NULL; annotations.color = "red";
+  #tad.x.line = NULL; tad.y.line = NULL; tad.line.col = NULL; line.colors = c("red", "blue")
+  #tad.x.line = cattle.files$dchic_comp; tad.chr_x = 26
+  #tad.y.line = cattle.files$dchic_comp; tad.chr_y = 25
+
   #sanity check
   if(!inherits(matrix, c("Matrix", "matrix"))) {
     stop("input matrix is not a matrix or dgCMatrix object")}
