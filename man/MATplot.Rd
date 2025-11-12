@@ -6,9 +6,9 @@
 \usage{
 MATplot(
   matrix,
-  start,
-  stop,
   bin.width,
+  start = NULL,
+  stop = NULL,
   log2 = T,
   scale.colors = "H",
   matrix.diag = T,
@@ -25,11 +25,11 @@ MATplot(
 )
 }
 \arguments{
-\item{matrix}{\code{dgCMatrix} or \code{matrix} object for only one chromosome.}
-
-\item{start, stop}{Region of interest in base pair.}
+\item{matrix}{\code{dgCMatrix} or \code{matrix} object with intra-chromosomal interactions (i.e. symmetrical matrix).}
 
 \item{bin.width}{Bin width of the matrix in base pair.}
+
+\item{start, stop}{Region of interest in base pair on y-axis. Default is NULL to plot all the chromosome.}
 
 \item{log2}{logical. Use the log2 of the matrix values. Default is \code{TRUE}.}
 
@@ -76,7 +76,7 @@ MATplot(
 }
 }
 \details{
-The matrix input must be a \code{Matrix} or a \code{matrix} object for only one chromosome (see \code{cool2matrix()} function to read cool files).
+The matrix input must be a \code{Matrix} or a \code{matrix} object for only one chromosome (see \code{cool2matrix()} function to read cool files). Only the upper part of the matrix is used to plot the full matrix (as symmetrical).
 All domains (TADs or compartments) are bed files (3 columns: chr, start and end) and can be R object (\code{dataframe} or \code{GRanges}) or the path of the files.
 For \code{tad.lines}, another column can be used to specify different classes of domains (e.g compartment A or B). To use those domain classes, specify the column number (of the \code{tad.upper.line} and \code{tad.lower.line} inputs) with \code{tad.line.col} parameter and a custom set of colors with \code{line.colors} parameter.
 Loop are stored in bedpe files (6 columns: chr1, start1, end, chr2, start2 and end2) and can be a \code{dataframe} object or the path of the file.
@@ -92,8 +92,8 @@ domains.gr = boundary2domain(boundaries.gr)
 comp.gr = PC1calling(PC1_250kb.gr)
 
 MATplot(mat_HCT116_chr19_50kb,
-    start = 5e6, stop = 15e6,
     bin.width = 50e3, log2 = TRUE,
+    start = 5e6, stop = 15e6,
     scale.colors = "H", #color of matrix, try "D" or "H"
     tad.upper.tri = domains.gr,
     tad.chr = "chr19")
