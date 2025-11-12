@@ -58,8 +58,8 @@ interMATplot <- function(matrix, bin.width, start_y = NULL, stop_y = NULL, start
                     tad.x.line = NULL, tad.y.line = NULL, tad.line.col = NULL, line.colors = c("red", "blue")) {
 
   #matrix = cool2matrix(cattle.files$norm_mcool, chr = 25, chr2 = 26, bin.width = 128000,
-   #                    balance = FALSE, verbose = TRUE)
-  #bin.width = 128e3; start_y = NULL; stop_y = 40e6; start_x = NULL; stop_x = 50e6; log2 = T; scale.colors = "H"; scale.limits = NULL;
+  #                     balance = FALSE, verbose = TRUE)
+  #bin.width = 128e3; start_y = 10e6; stop_y = 40e6; start_x = NULL; stop_x = 50e6; log2 = T; scale.colors = "H"; scale.limits = NULL;
   #tad.x.tri = NULL; tad.y.tri = NULL; loop.bedpe = NULL; tad.chr_x = NULL; tad.chr_y = NULL; annotations.color = "red";
   #tad.x.line = NULL; tad.y.line = NULL; tad.line.col = NULL; line.colors = c("red", "blue")
   #tad.x.line = cattle.files$dchic_comp; tad.chr_x = 26
@@ -78,6 +78,10 @@ interMATplot <- function(matrix, bin.width, start_y = NULL, stop_y = NULL, start
   # starts and stops in bin indexes
   from1 = start_y %/% bin.width + 1 ; to1 = stop_y %/% bin.width
   from2 = start_x %/% bin.width + 1 ; to2 = stop_x %/% bin.width
+
+  # graphical limits
+  min_graph1 = (from1 - 1) * bin.width ; max_graph1 = to1 * bin.width
+  min_graph2 = (from2 - 1) * bin.width ; max_graph2 = to2 * bin.width
 
   #filter matrix area
   mat = as(Matrix::Matrix(matrix[from1:to1, from2:to2]), "CsparseMatrix")
@@ -100,9 +104,9 @@ interMATplot <- function(matrix, bin.width, start_y = NULL, stop_y = NULL, start
   #geom_tile
   p = ggplot2::ggplot()+ggplot2::geom_tile(data = melted_mat, ggplot2::aes(y = y, x = x, fill = i))+
     ggplot2::scale_x_continuous(labels = scales::unit_format(unit = "Mb", scale = 1e-6),
-                                limits = c(min(melted_mat$x - bin.width / 2), max(melted_mat$x + bin.width / 2)))+ #limit to match geom_tile centers
+                                limits = c(min_graph2, max_graph2))+ #limit to match geom_tile centers
     ggplot2::scale_y_continuous(labels = scales::unit_format(unit = "Mb", scale = 1e-6),
-                                limits = c(max(melted_mat$y + bin.width / 2), min(melted_mat$y - bin.width / 2)))+
+                                limits = c(-min_graph1, -max_graph1))+
     ggplot2::coord_fixed()+ggplot2::theme(axis.title.x = ggplot2::element_blank(), axis.title.y = ggplot2::element_blank(), legend.title = ggplot2::element_blank())
 
   #scales colors
@@ -132,11 +136,11 @@ interMATplot <- function(matrix, bin.width, start_y = NULL, stop_y = NULL, start
 
     names(tad) = c("chr", "s", "e")
     if (is.null(tad.chr_x)) {
-      tad <- dplyr::filter(tad, e > start_x, s < stop_x)} else {
-        tad <- dplyr::filter(tad, chr == tad.chr_x, e > start_x, s < stop_x)}
+      tad <- dplyr::filter(tad, e > min_graph2, s < max_graph2)} else {
+        tad <- dplyr::filter(tad, chr == tad.chr_x, e > min_graph2, s < max_graph2)}
 
-    tad$e2 <- ifelse(tad$e >= stop_x, stop_x, tad$e)
-    tad$s2 <- ifelse(tad$s <= start_x, start_x, tad$s)
+    tad$e2 <- ifelse(tad$e >= max_graph2, max_graph2, tad$e)
+    tad$s2 <- ifelse(tad$s <= min_graph2, min_graph2, tad$s)
 
     p = p + ggplot2::geom_segment(data = tad, ggplot2::aes(x = s, y = -s, xend = e2, yend = -s2), color = annotations.color, size = 0.3)+
       ggplot2::geom_segment(data = tad, ggplot2::aes(x = e2, y = -s2, xend = e, yend = -e), color = annotations.color, size = 0.3)
@@ -159,11 +163,11 @@ interMATplot <- function(matrix, bin.width, start_y = NULL, stop_y = NULL, start
 
     names(tad) = c("chr", "s", "e")
     if (is.null(tad.chr_y)) {
-      tad <- dplyr::filter(tad, e > start_y, s < stop_y)} else {
-        tad <- dplyr::filter(tad, chr == tad.chr_y, e > start_y, s < stop_y)}
+      tad <- dplyr::filter(tad, e > min_graph1, s < max_graph1)} else {
+        tad <- dplyr::filter(tad, chr == tad.chr_y, e > min_graph1, s < max_graph1)}
 
-    tad$e2 <- ifelse(tad$e >= stop_y, stop_y, tad$e)
-    tad$s2 <- ifelse(tad$s <= start_y, start_y, tad$s)
+    tad$e2 <- ifelse(tad$e >= max_graph1, max_graph1, tad$e)
+    tad$s2 <- ifelse(tad$s <= min_graph1, min_graph1, tad$s)
 
     p = p + ggplot2::geom_segment(data = tad, ggplot2::aes(x = s2, y = -e2, xend = e, yend = -e), color = annotations.color, size = 0.3)+
       ggplot2::geom_segment(data = tad, ggplot2::aes(x = s, y = -s, xend = s2, yend = -e2), color = annotations.color, size = 0.3)
@@ -203,15 +207,15 @@ interMATplot <- function(matrix, bin.width, start_y = NULL, stop_y = NULL, start
     names(tad) = c("chr", "s", "e", "col")
     tad$col = as.factor(tad$col)
     if (is.null(tad.chr_x)) {
-      tad <- dplyr::filter(tad, e > start_x, s < stop_x)} else {
-        tad <- dplyr::filter(tad, chr == tad.chr_x, e > start_x, s < stop_x)
+      tad <- dplyr::filter(tad, e > min_graph2, s < max_graph2)} else {
+        tad <- dplyr::filter(tad, chr == tad.chr_x, e > min_graph2, s < max_graph2)
       }
 
-    tad$e2 <- ifelse(tad$e >= stop_x, stop_x, tad$e)
-    tad$s2 <- ifelse(tad$s <= start_x, start_x, tad$s)
+    tad$e2 <- ifelse(tad$e >= max_graph2, max_graph2, tad$e)
+    tad$s2 <- ifelse(tad$s <= min_graph2, min_graph2, tad$s)
 
-    p = p + ggplot2::geom_segment(data = tad, ggplot2::aes(x = s2, y = -start_y, xend = e2, yend = -start_y, col = col), size = 1.5)+
-      ggplot2::geom_segment(data = tad, ggplot2::aes(x = s2, y = -stop_y, xend = e2, yend = -stop_y, col = col), size = 1.5)
+    p = p + ggplot2::geom_segment(data = tad, ggplot2::aes(x = s2, y = -min_graph1, xend = e2, yend = -min_graph1, col = col), size = 1.5)+
+      ggplot2::geom_segment(data = tad, ggplot2::aes(x = s2, y = -max_graph1, xend = e2, yend = -max_graph1, col = col), size = 1.5)
   }
 
   #tad.y.line
@@ -247,15 +251,15 @@ interMATplot <- function(matrix, bin.width, start_y = NULL, stop_y = NULL, start
     names(tad) = c("chr", "s", "e", "col")
     tad$col = as.factor(tad$col)
     if (is.null(tad.chr_y)) {
-      tad <- dplyr::filter(tad, e > start_y, s < stop_y)} else {
-        tad <- dplyr::filter(tad, chr == tad.chr_y, e > start_y, s < stop_y)
+      tad <- dplyr::filter(tad, e > min_graph1, s < max_graph1)} else {
+        tad <- dplyr::filter(tad, chr == tad.chr_y, e > min_graph1, s < max_graph1)
       }
 
-    tad$e2 <- ifelse(tad$e >= stop_y, stop_y, tad$e)
-    tad$s2 <- ifelse(tad$s <= start_y, start_y, tad$s)
+    tad$e2 <- ifelse(tad$e >= max_graph1, max_graph1, tad$e)
+    tad$s2 <- ifelse(tad$s <= min_graph1, min_graph1, tad$s)
 
-    p = p + ggplot2::geom_segment(data = tad, ggplot2::aes(x = start_x, y = -s2, xend = start_x, yend = -e2, col = col), size = 1)+
-      ggplot2::geom_segment(data = tad, ggplot2::aes(x = stop_x, y = -s2, xend = stop_x, yend = -e2, col = col), size = 1)
+    p = p + ggplot2::geom_segment(data = tad, ggplot2::aes(x = min_graph2, y = -s2, xend = min_graph2, yend = -e2, col = col), size = 1)+
+      ggplot2::geom_segment(data = tad, ggplot2::aes(x = max_graph2, y = -s2, xend = max_graph2, yend = -e2, col = col), size = 1)
   }
 
   if (!is.null(tad.x.line) | !is.null(tad.y.line)) {
@@ -275,8 +279,8 @@ interMATplot <- function(matrix, bin.width, start_y = NULL, stop_y = NULL, start
 
     names(loop) = c("c_y", "s_y", "e_y", "c_x", "s_x", "e_x")
     if (is.null(tad.chr)) {
-      loop <- dplyr::filter(loop, s_y >= start_y, e_y <= stop_y, s_x >= start_x, e_x <= stop_x)} else {
-        loop <- dplyr::filter(loop, c_y == tad.chr_y, c_x == tad.chr_x, s_y >= start_y, e_y <= stop_y, s_x >= start_x, e_x <= stop_x)}
+      loop <- dplyr::filter(loop, s_y >= min_graph1, e_y <= max_graph1, s_x >= min_graph2, e_x <= max_graph2)} else {
+        loop <- dplyr::filter(loop, c_y == tad.chr_y, c_x == tad.chr_x, s_y >= min_graph1, e_y <= max_graph1, s_x >= min_graph2, e_x <= max_graph2)}
 
 
     p = p +
