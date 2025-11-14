@@ -10,7 +10,8 @@ cool2matrix(
   bin.width = NA,
   balance = FALSE,
   balancing_name = "weight",
-  verbose = TRUE
+  verbose = TRUE,
+  chr2 = NULL
 )
 }
 \arguments{
@@ -22,9 +23,11 @@ cool2matrix(
 
 \item{balance}{Logical. Weather or not to use balanced counts instead of raw counts. Default = \code{FALSE}.}
 
-\item{balancing_name}{Character that must correspond to the name given to the normalization method used. The most common names (for HiC normalisation) are "weight" (default), "KR", "VC".}
+\item{balancing_name}{Character that must correspond to the name given to the normalization method used. The most common names (for HiC normalization) are "weight" (default), "KR", "VC".}
 
 \item{verbose}{Logical. Whether or not to print messages. Default = \code{TRUE}.}
+
+\item{chr2}{The second chromosome to extract inter-chromosomal interactions. This chromosome will be represented in the columns of the extracted matrix (i.e. x axis). Default is \code{NULL} (intra-chromosomal interactions).}
 }
 \value{
 A \code{dgCMatrix} object: upper triangular and sparse Matrix
