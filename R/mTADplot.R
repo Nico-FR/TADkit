@@ -173,28 +173,31 @@ mTADplot <- function(tad.lst, chr, start, stop, tad.id = FALSE,
                                        which = bin.gr, as = "GRanges"
       )
 
-      # Sanity check of chr names of bigwig file
-      if (length(cov.gr[GenomeInfoDb::seqnames(cov.gr) == as.character(bigwig.chr)]) == 0) {
-        stop(paste0("there is no chromosome ", bigwig.chr, " in the bigwig file"))
+      # if there is datas in cov.gr
+      if (length(cov.gr[GenomeInfoDb::seqnames(cov.gr) == as.character(bigwig.chr)]) != 0) {
+
+        data.gr <- GenomicRanges::GRanges(
+          seqnames = paste0("chr", gsub('chr','', chr)),
+          ranges = IRanges::ranges(cov.gr),
+          strand = "*",
+          score = GenomicRanges::mcols(cov.gr)[1]
+        )
+
+        bigwigTrack <- Gviz::DataTrack(data.gr,
+                                       chr = paste0("chr", gsub('chr','', chr)),
+                                       type = "hist", aggregation = bigwig.xaxis,
+                                       window = "fixed", windowSize = bigwig.binwidth,
+                                       fill = colors.lst[i],
+                                       name = names(bigwigPath.lst[i]),
+                                       transformation = transformation.method
+        )
+
+        bigwigTracks <- append(bigwigTracks, bigwigTrack)
+
+      } else { #if there is no data: warning
+        warning(paste0("there is no data for this chromosome ", bigwig.chr, " and/or at these coordinates in ", bigwigPath.lst[[i]], " file"))
+        bigwigTracks <- NULL
       }
-
-      data.gr <- GenomicRanges::GRanges(
-        seqnames = paste0("chr", gsub('chr','', chr)),
-        ranges = IRanges::ranges(cov.gr),
-        strand = "*",
-        score = GenomicRanges::mcols(cov.gr)[1]
-      )
-
-      bigwigTrack <- Gviz::DataTrack(data.gr,
-                                     chr = paste0("chr", gsub('chr','', chr)),
-                                     type = "hist", aggregation = bigwig.xaxis,
-                                     window = "fixed", windowSize = bigwig.binwidth,
-                                     fill = colors.lst[i],
-                                     name = names(bigwigPath.lst[i]),
-                                     transformation = transformation.method
-      )
-
-      bigwigTracks <- append(bigwigTracks, bigwigTrack)
     }
   }
 

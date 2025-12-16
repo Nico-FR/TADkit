@@ -161,31 +161,34 @@ TADplot <- function(tad.gr, chr, start, stop, tad.id = FALSE,
                                       which = bin.gr, as = "RleList"
     )
 
-    # Sanity check of chr names of bigwig file
-    if (length(cov.rle[names(cov.rle) == as.character(bigwig.chr)]) == 0) {
-      stop(paste0("There is no chromosome ", bigwig.chr, " in the bigwig file."))
+    # if there is datas in cov.gr
+    if (length(cov.rle[names(cov.rle) == as.character(bigwig.chr)]) != 0) {
+
+      bins <- GenomicRanges::tileGenome(GenomeInfoDb::seqlengths(bin.gr)[as.character(bigwig.chr)],
+                                        tilewidth = bigwig.binwidth, cut.last.tile.in.chrom = TRUE
+      )
+
+      bins2 <- bins[start(bins) >= extended_start & end(bins) <= extended_stop]
+
+      # coverage for each bins according to aggregation.method
+      temp <- S4Vectors::aggregate(cov.rle[[as.character(bigwig.chr)]], bins2, FUN = bigwig.xaxis)
+      bins2$median_cov <- temp # create metadata with the median values
+
+      GenomeInfoDb::seqlevels(bins2) = paste0("chr", gsub('chr','', GenomeInfoDb::seqlevels(bins2)))
+
+      bigwigTrack <- Gviz::DataTrack(bins2,
+                                     chr =  paste0("chr", gsub('chr','', chr)),
+                                     type = "hist",
+                                     fill = "grey50",
+                                     name = "bw",
+                                     col.histogram = "grey25",
+                                     transformation = transformation.method
+      )
+
+    } else { #if there is no data: warning
+      warning(paste0("there is no data for this chromosome ", bigwig.chr, " and/or at these coordinates in ", bigwig.path, " file"))
+      bigwigTrack <- NULL
     }
-
-    bins <- GenomicRanges::tileGenome(GenomeInfoDb::seqlengths(bin.gr)[as.character(bigwig.chr)],
-                                      tilewidth = bigwig.binwidth, cut.last.tile.in.chrom = TRUE
-    )
-
-    bins2 <- bins[start(bins) >= extended_start & end(bins) <= extended_stop]
-
-    # coverage for each bins according to aggregation.method
-    temp <- S4Vectors::aggregate(cov.rle[[as.character(bigwig.chr)]], bins2, FUN = bigwig.xaxis)
-    bins2$median_cov <- temp # create metadata with the median values
-
-    GenomeInfoDb::seqlevels(bins2) = paste0("chr", gsub('chr','', GenomeInfoDb::seqlevels(bins2)))
-
-    bigwigTrack <- Gviz::DataTrack(bins2,
-                                   chr =  paste0("chr", gsub('chr','', chr)),
-                                   type = "hist",
-                                   fill = "grey50",
-                                   name = "bw",
-                                   col.histogram = "grey25",
-                                   transformation = transformation.method
-    )
   }
 
   #####################################
