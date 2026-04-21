@@ -59,7 +59,7 @@ mMATplot <- function(matrix.upper, matrix.lower, bin.width, start = NULL, stop =
 
   #starts and stops if NULLs
   if (is.null(start)) {start = 1}
-  if (is.null(stop)) {stop = nrow(matrix) * bin.width}
+  if (is.null(stop)) {stop = nrow(matrix.upper) * bin.width}
 
   #bin to read
   from = start %/% bin.width + 1 ; to = stop %/% bin.width #nb bin
