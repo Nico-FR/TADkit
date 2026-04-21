@@ -15,7 +15,7 @@ viewPointInteract(
   self_interaction = FALSE,
   Qnorm = FALSE,
   log2 = FALSE,
-  seqname = "1",
+  seqname = "NA",
   colors.lst = c("#66C2A5", "#FC8D62", "#8DA0CB", "#E78AC3", "#A6D854", "#FFD92F",
     "#E5C494", "#B3B3B3")
 )
@@ -36,11 +36,11 @@ viewPointInteract(
 \item{self_interaction}{logical. Whether or not to add interactions within the view-point.}
 
 \item{Qnorm}{Quantile normalization of the average interaction. Default is FALSE.
-This parameter can be useful for the graph, as it allows a better comparison of distributions between matrices. Note that normalization is best performed on the entire chromosome than anly on an area.}
+This parameter can be useful for the graph, as it allows a better comparison of distributions between matrices. Note that normalization is best performed on the entire chromosome than only on an area.}
 
 \item{log2}{logical. Use the log2 of the matrix values. Default is \code{FALSE}. Note that if TRUE, interaction with 0 count are removed from the analysis.}
 
-\item{seqname}{chromosome names as character, default = "1".}
+\item{seqname}{chromosome names as character, default = "NA".}
 
 \item{colors.lst}{Set of 8 colors used for plot.}
 }

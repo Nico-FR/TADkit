@@ -10,10 +10,10 @@
 #' @param self_interaction logical. Whether or not to add interactions within the view-point.
 #' @param start,stop Area in bp of the chromosome to be analyzed. Default is NULL to use the entire chromosome (i.e. entire matrix).
 #' @param Qnorm Quantile normalization of the average interaction. Default is FALSE.
-#' This parameter can be useful for the graph, as it allows a better comparison of distributions between matrices. Note that normalization is best performed on the entire chromosome than anly on an area.
+#' This parameter can be useful for the graph, as it allows a better comparison of distributions between matrices. Note that normalization is best performed on the entire chromosome than only on an area.
 #' @param log2 logical. Use the log2 of the matrix values. Default is `FALSE`. Note that if TRUE, interaction with 0 count are removed from the analysis.
 #' @param colors.lst Set of 8 colors used for plot.
-#' @param seqname chromosome names as character, default = "1".
+#' @param seqname chromosome names as character, default = "NA".
 #' @return `GRanges` bedgraph with average interaction.
 #'
 #' @importFrom scales unit_format
@@ -40,7 +40,7 @@
 #'
 #'
 viewPointInteract <- function(matrix.lst, bin.width, vp.start, vp.stop, output = "GRanges", start = NULL, stop = NULL, self_interaction = FALSE, Qnorm = FALSE, log2 = FALSE,
-                              seqname = "1", colors.lst = c("#66C2A5", "#FC8D62", "#8DA0CB", "#E78AC3", "#A6D854", "#FFD92F", "#E5C494", "#B3B3B3")) {
+                              seqname = "NA", colors.lst = c("#66C2A5", "#FC8D62", "#8DA0CB", "#E78AC3", "#A6D854", "#FFD92F", "#E5C494", "#B3B3B3")) {
 
   #sanity check
   if (!is.list(matrix.lst)) {
