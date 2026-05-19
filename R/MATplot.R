@@ -16,17 +16,20 @@
 #' @param matrix.diag logical. Weather or not to plot diagonal values of the matrix. Default = `TRUE`.
 #' @param log2 logical. Use the log2 of the matrix values. Default is `TRUE`.
 #' @param scale.limits Use to set limits on the scale. Default is NULL to use all values. E.g if use scale.limits = c(0, 10): Values < 0 will be fix to 0 and values > 10 will be fix to 10.
-#' @param scale.colors A character string indicating the color map option to use. Eight colors palettes are available from `viridis` package. Two supplementary palettes `"OE"` and  `"OE2"` (blue to red and purple to green respectively) are made for data centered on 0 (e.g log2 of observed/expected matrix). Default is `"H"`:
+#' @param scale.colors A character string indicating the color map option to use. Eight colors palettes are available from `viridis` package. Default is `"H"`.
+#' Two supplementary palettes `"OE"` and  `"OE2"` (blue to red and purple to green respectively) are made for data centered on 0 (e.g log2 of observed/expected matrix).
+#' The palette `"R"` provides a white to dark red gradient.
+#' * `"turbo"` (or `"H"`),
+#' * `"ObsExp"` (or `"OE"`),
+#' * `"ObsExp2"` (or `"OE2"`),
+#' * `"Reds"` (or `"R"`),
 #' * `"magma"` (or `"A"`),
 #' * `"inferno"` (or `"B"`),
 #' * `"plasma"` (or `"C"`),
 #' * `"viridis"` (or `"D"`),
 #' * `"cividis"` (or `"E"`),
 #' * `"rocket"` (or `"F"`),
-#' * `"mako"` (or `"G"`),
-#' * `"turbo"` (or `"H"`),
-#' * `"ObsExp"` (or `"OE"`),
-#' * `"ObsExp2"` (or `"OE2"`).
+#' * `"mako"` (or `"G"`).
 #' @param tad.upper.tri,tad.lower.tri `data.frame`, `GRanges` or the bed files path with the TAD to plot as triangle in the upper or lower part of the matrix. Default is `NULL`.
 #' @param tad.upper.line,tad.lower.line `data.frame`, `GRanges` or the bed files path with the TAD to plot as line in the upper or lower parts of the matrix. Default is `NULL`.
 #' @param tad.line.col Column number of `tad.upper.line` and `tad.lower.line` files that contain factors used to color upper and lower lines. Default is `NULL`.
@@ -47,31 +50,21 @@
 #' @export
 #'
 #' @examples
+#' MATplot(mat_HCT116_chr19_50kb,
+#'     bin.width = 50e3, start = 5e6, stop = 15e6)
 #'
-#' # get domains from boundaries:
+#' # add domains (i.e TADs)
 #' boundaries.gr = dataframes2grange(tad_HCT116_5kb.bed, human_chromsize)
 #' domains.gr = boundary2domain(boundaries.gr)
-#'
-#' # get compartments from PC1:
+#' # add compartment A and B
 #' comp.gr = PC1calling(PC1_250kb.gr)
 #'
 #' MATplot(mat_HCT116_chr19_50kb,
-#'     bin.width = 50e3, log2 = TRUE,
 #'     start = 5e6, stop = 15e6,
-#'     scale.colors = "H", #color of matrix, try "D" or "H"
-#'     tad.upper.tri = domains.gr,
-#'     tad.chr = "chr19")
-#'
-#'  # add compartement A and B
-#'  comp.gr = PC1calling(PC1_250kb.gr)
-#'
-#' MATplot(mat_HCT116_chr19_50kb,
-#'     start = 5e6, stop = 15e6,
-#'     bin.width = 50e3, log2 = TRUE,
-#'     scale.colors = "H", #color of matrix, try "D" or "H"
+#'     bin.width = 50e3,
 #'     tad.upper.tri = domains.gr,
 #'     tad.upper.line = comp.gr,
-#'     tad.line.col = 1, #used first metadata column with compartments A or B
+#'     tad.line.col = 1, #used first metadata column with compartments values (A or B)
 #'     tad.chr = "chr19")
 
 MATplot <- function(matrix, bin.width, start = NULL, stop = NULL, log2 = T, scale.colors = "H", matrix.diag = T, scale.limits = NULL,
@@ -125,7 +118,8 @@ MATplot <- function(matrix, bin.width, start = NULL, stop = NULL, log2 = T, scal
                                 limits = c(min_graph, max_graph))+
     ggplot2::scale_y_continuous(labels = scales::unit_format(unit = "Mb", scale = 1e-6),
                                 limits = c(-min_graph, -max_graph))+
-    ggplot2::coord_fixed()+ggplot2::theme(axis.title.x = ggplot2::element_blank(), axis.title.y = ggplot2::element_blank(), legend.title = ggplot2::element_blank())
+    ggplot2::coord_fixed()+
+    ggplot2::labs(x = NULL, y = NULL, fill = NULL, color = NULL)
 
   #scales colors
   if (scale.colors == "OE" | scale.colors == "ObsExp" | scale.colors == "OE2" | scale.colors == "ObsExp2") {
@@ -133,6 +127,8 @@ MATplot <- function(matrix, bin.width, start = NULL, stop = NULL, log2 = T, scal
       low = ifelse(scale.colors %in% c("OE" ,"ObsExp"), "blue", "purple4"),
       high = ifelse(scale.colors %in% c("OE" ,"ObsExp"), "red", "darkgreen"),
       midpoint = 0, mid="white", na.value = "white")
+  } else if (scale.colors %in% c("R", "Reds")) {
+    p <- p + ggplot2::scale_fill_gradient(low = "white", high = "red3", na.value = "white")
   } else {
     p <- p + viridis::scale_fill_viridis(na.value = "black", option = scale.colors)
     }
@@ -161,8 +157,8 @@ MATplot <- function(matrix, bin.width, start = NULL, stop = NULL, log2 = T, scal
     tad$e2 <- ifelse(tad$e >= max_graph, max_graph, tad$e)
     tad$s2 <- ifelse(tad$s <= min_graph, min_graph, tad$s)
 
-    p = p + ggplot2::geom_segment(data = tad, ggplot2::aes(x = s, y = -s, xend = e2, yend = -s2), color = annotations.color, size = 0.3)+
-      ggplot2::geom_segment(data = tad, ggplot2::aes(x = e2, y = -s2, xend = e, yend = -e), color = annotations.color, size = 0.3)
+    p = p + ggplot2::geom_segment(data = tad, ggplot2::aes(x = s, y = -s, xend = e2, yend = -s2), color = annotations.color, linewidth = 0.3)+
+      ggplot2::geom_segment(data = tad, ggplot2::aes(x = e2, y = -s2, xend = e, yend = -e), color = annotations.color, linewidth = 0.3)
   }
 
   #lower tri
@@ -188,8 +184,8 @@ MATplot <- function(matrix, bin.width, start = NULL, stop = NULL, log2 = T, scal
     tad$e2 <- ifelse(tad$e >= max_graph, max_graph, tad$e)
     tad$s2 <- ifelse(tad$s <= min_graph, min_graph, tad$s)
 
-    p = p + ggplot2::geom_segment(data = tad, ggplot2::aes(x = s2, y = -e2, xend = e, yend = -e), color = annotations.color, size = 0.3)+
-      ggplot2::geom_segment(data = tad, ggplot2::aes(x = s, y = -s, xend = s2, yend = -e2), color = annotations.color, size = 0.3)
+    p = p + ggplot2::geom_segment(data = tad, ggplot2::aes(x = s2, y = -e2, xend = e, yend = -e), color = annotations.color, linewidth = 0.3)+
+      ggplot2::geom_segment(data = tad, ggplot2::aes(x = s, y = -s, xend = s2, yend = -e2), color = annotations.color, linewidth = 0.3)
   }
 
 
@@ -233,8 +229,8 @@ MATplot <- function(matrix, bin.width, start = NULL, stop = NULL, log2 = T, scal
     tad$e2 <- ifelse(tad$e >= max_graph, max_graph, tad$e)
     tad$s2 <- ifelse(tad$s <= min_graph, min_graph, tad$s)
 
-    p = p + ggplot2::geom_segment(data = tad, ggplot2::aes(x = s2, y = -min_graph, xend = e2, yend = -min_graph, col = col), size = 1.5)+
-      ggplot2::geom_segment(data = tad, ggplot2::aes(x = max_graph, y = -s2, xend = max_graph, yend = -e2, col = col), size = 1.5)
+    p = p + ggplot2::geom_segment(data = tad, ggplot2::aes(x = s2, y = -min_graph, xend = e2, yend = -min_graph, col = col), linewidth = 1.5)+
+      ggplot2::geom_segment(data = tad, ggplot2::aes(x = max_graph, y = -s2, xend = max_graph, yend = -e2, col = col), linewidth = 1.5)
   }
 
   #lower line
@@ -277,8 +273,8 @@ MATplot <- function(matrix, bin.width, start = NULL, stop = NULL, log2 = T, scal
     tad$e2 <- ifelse(tad$e >= max_graph, max_graph, tad$e)
     tad$s2 <- ifelse(tad$s <= min_graph, min_graph, tad$s)
 
-    p = p + ggplot2::geom_segment(data = tad, ggplot2::aes(x = min_graph, y = -s2, xend = min_graph, yend = -e2, col = col), size = 1)+
-      ggplot2::geom_segment(data = tad, ggplot2::aes(x = s2, y = -max_graph, xend = e2, yend = -max_graph, col = col), size = 1)
+    p = p + ggplot2::geom_segment(data = tad, ggplot2::aes(x = min_graph, y = -s2, xend = min_graph, yend = -e2, col = col), linewidth = 1.5)+
+      ggplot2::geom_segment(data = tad, ggplot2::aes(x = s2, y = -max_graph, xend = e2, yend = -max_graph, col = col), linewidth = 1.5)
   }
 
   if (!is.null(tad.upper.line) | !is.null(tad.upper.line)) {
@@ -302,8 +298,8 @@ MATplot <- function(matrix, bin.width, start = NULL, stop = NULL, log2 = T, scal
         loop <- dplyr::filter(loop, chr1 == tad.chr, chr2 == tad.chr, start1 >= min_graph, end1 <= max_graph, start2 >= min_graph, end2 <= max_graph)}
 
 
-    p = p + ggplot2::geom_rect(data = loop, ggplot2::aes(xmin = start2, xmax = end2, ymin = -start1, ymax = -end1), fill = NA, color = annotations.color, size = 0.3)+
-      ggplot2::geom_rect(data = loop, ggplot2::aes(xmin = start1, xmax = end1, ymin = -start2, ymax = -end2), fill = NA, color = annotations.color, size = 0.3)
+    p = p + ggplot2::geom_rect(data = loop, ggplot2::aes(xmin = start2, xmax = end2, ymin = -start1, ymax = -end1), fill = NA, color = annotations.color, linewidth = 0.3)+
+      ggplot2::geom_rect(data = loop, ggplot2::aes(xmin = start1, xmax = end1, ymin = -start2, ymax = -end2), fill = NA, color = annotations.color, linewidth = 0.3)
   }
 
   p

@@ -37,18 +37,21 @@ interMATplot(
 
 \item{log2}{logical. Use the log2 of the matrix values. Default is \code{TRUE}.}
 
-\item{scale.colors}{A character string indicating the color map option to use. Eight colors palettes are available from \code{viridis} package. Two supplementary palettes \code{"OE"} and  \code{"OE2"} (blue to red and purple to green respectively) are made for data centered on 0 (e.g log2 of observed/expected matrix). Default is \code{"H"}:
+\item{scale.colors}{A character string indicating the color map option to use. Eight colors palettes are available from \code{viridis} package. Default is \code{"H"}.
+Two supplementary palettes \code{"OE"} and  \code{"OE2"} (blue to red and purple to green respectively) are made for data centered on 0 (e.g log2 of observed/expected matrix).
+The palette \code{"R"} provides a white to dark red gradient.
 \itemize{
+\item \code{"turbo"} (or \code{"H"}),
+\item \code{"ObsExp"} (or \code{"OE"}),
+\item \code{"ObsExp2"} (or \code{"OE2"}),
+\item \code{"Reds"} (or \code{"R"}),
 \item \code{"magma"} (or \code{"A"}),
 \item \code{"inferno"} (or \code{"B"}),
 \item \code{"plasma"} (or \code{"C"}),
 \item \code{"viridis"} (or \code{"D"}),
 \item \code{"cividis"} (or \code{"E"}),
 \item \code{"rocket"} (or \code{"F"}),
-\item \code{"mako"} (or \code{"G"}),
-\item \code{"turbo"} (or \code{"H"}),
-\item \code{"ObsExp"} (or \code{"OE"}),
-\item \code{"ObsExp2"} (or \code{"OE2"}).
+\item \code{"mako"} (or \code{"G"}).
 }}
 
 \item{scale.limits}{Use to set limits on the scale. Default is NULL to use all values. E.g if use scale.limits = c(0, 10): Values < 0 will be fix to 0 and values > 10 will be fix to 10.}
@@ -87,9 +90,8 @@ Chromosome domains and loops can be filter using \code{tad.chr.y} and \code{tad.
 }
 \examples{
 
-# create a matrix 500x1000 bins
-matrix <- matrix(rnorm(500000, mean = 50, sd = 10) + c(rep(0, 250),
-  seq(0, 50, length.out = 500), rep(0, 250)), 500, 1000)
+# create a matrix 100x500 bins
+matrix <- matrix(rnorm(50000, mean = 50, sd = 10) + seq(50,500,length.out=50000), 100, 500)
 
 interMATplot(matrix, bin.width = 100e3)
 

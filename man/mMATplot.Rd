@@ -35,18 +35,21 @@ mMATplot(
 
 \item{log2}{logical. Use the log2 of the matrix values. Default is \code{TRUE}.}
 
-\item{scale.colors}{A character string indicating the color map option to use. Eight colors palettes are available from \code{viridis} package. Two supplementary palettes \code{"OE"} and  \code{"OE2"} (blue to red and purple to green respectively) are made for data centered on 0 (e.g log2 of observed/expected matrix). Default is \code{"H"}:
+\item{scale.colors}{A character string indicating the color map option to use. Eight colors palettes are available from \code{viridis} package. Default is \code{"H"}.
+Two supplementary palettes \code{"OE"} and  \code{"OE2"} (blue to red and purple to green respectively) are made for data centered on 0 (e.g log2 of observed/expected matrix).
+The palette \code{"R"} provides a white to dark red gradient.
 \itemize{
+\item \code{"turbo"} (or \code{"H"}),
+\item \code{"ObsExp"} (or \code{"OE"}),
+\item \code{"ObsExp2"} (or \code{"OE2"}),
+\item \code{"Reds"} (or \code{"R"}),
 \item \code{"magma"} (or \code{"A"}),
 \item \code{"inferno"} (or \code{"B"}),
 \item \code{"plasma"} (or \code{"C"}),
 \item \code{"viridis"} (or \code{"D"}),
 \item \code{"cividis"} (or \code{"E"}),
 \item \code{"rocket"} (or \code{"F"}),
-\item \code{"mako"} (or \code{"G"}),
-\item \code{"turbo"} (or \code{"H"}),
-\item \code{"ObsExp"} (or \code{"OE"}),
-\item \code{"ObsExp2"} (or \code{"OE2"}).
+\item \code{"mako"} (or \code{"G"}).
 }}
 
 \item{scale.limits}{Use to set limits on the scale. Default is NULL to use all values. E.g if use scale.limits = c(0, 10): Values < 0 will be fix to 0 and values > 10 will be fix to 10.}
@@ -86,20 +89,16 @@ Loop are stored in bedpe files (6 columns: chr1, start1, end, chr2, start2 and e
 Chromosome domains and loops can be filter using \code{tad.chr} parameter.
 }
 \examples{
-# get domains from boundaries:
-boundaries.gr = dataframes2grange(tad_HCT116_5kb.bed, human_chromsize)
-domains.gr = boundary2domain(boundaries.gr)
-
 mMATplot(matrix.upper = mat_HCT116_chr19_50kb,
     matrix.lower = mat_HCT116_chr19_50kb,
     start = 5e6, stop = 15e6,
-    bin.width = 50e3, log2 = TRUE,
-    tad.upper.tri = domains.gr,
-    tad.lower.tri = domains.gr,
-    tad.chr = "chr19")
+    bin.width = 50e3)
 
- # add compartement A and B
- comp.gr = PC1calling(PC1_250kb.gr)
+# add domains (i.e TADs)
+boundaries.gr = dataframes2grange(tad_HCT116_5kb.bed, human_chromsize)
+domains.gr = boundary2domain(boundaries.gr)
+# add compartment A and B
+comp.gr = PC1calling(PC1_250kb.gr)
 
 mMATplot(matrix.upper = mat_HCT116_chr19_50kb,
     matrix.lower = mat_HCT116_chr19_50kb,

@@ -17,17 +17,20 @@
 #' @param start_x,stop_x Region of interest in base pair on x-axis. Default is NULL to plot all the chromosome.
 #' @param log2 logical. Use the log2 of the matrix values. Default is `TRUE`.
 #' @param scale.limits Use to set limits on the scale. Default is NULL to use all values. E.g if use scale.limits = c(0, 10): Values < 0 will be fix to 0 and values > 10 will be fix to 10.
-#' @param scale.colors A character string indicating the color map option to use. Eight colors palettes are available from `viridis` package. Two supplementary palettes `"OE"` and  `"OE2"` (blue to red and purple to green respectively) are made for data centered on 0 (e.g log2 of observed/expected matrix). Default is `"H"`:
+#' @param scale.colors A character string indicating the color map option to use. Eight colors palettes are available from `viridis` package. Default is `"H"`.
+#' Two supplementary palettes `"OE"` and  `"OE2"` (blue to red and purple to green respectively) are made for data centered on 0 (e.g log2 of observed/expected matrix).
+#' The palette `"R"` provides a white to dark red gradient.
+#' * `"turbo"` (or `"H"`),
+#' * `"ObsExp"` (or `"OE"`),
+#' * `"ObsExp2"` (or `"OE2"`),
+#' * `"Reds"` (or `"R"`),
 #' * `"magma"` (or `"A"`),
 #' * `"inferno"` (or `"B"`),
 #' * `"plasma"` (or `"C"`),
 #' * `"viridis"` (or `"D"`),
 #' * `"cividis"` (or `"E"`),
 #' * `"rocket"` (or `"F"`),
-#' * `"mako"` (or `"G"`),
-#' * `"turbo"` (or `"H"`),
-#' * `"ObsExp"` (or `"OE"`),
-#' * `"ObsExp2"` (or `"OE2"`).
+#' * `"mako"` (or `"G"`).
 #' @param tad.y.tri,tad.x.tri `data.frame`, `GRanges` or the bed files path with the TAD to plot as triangle in the lower (x) or upper (y) part of the diagonal. Default is `NULL`.
 #' @param tad.y.line,tad.x.line `data.frame`, `GRanges` or the bed files path with the TAD to plot as line in the x or y axis of the matrix. Default is `NULL`.
 #' @param tad.line.col Column number of `tad.y.line` and `tad.x.line` files that contain factors used to color lines. Default is `NULL`.
@@ -48,23 +51,14 @@
 #'
 #' @examples
 #'
-#' # create a matrix 500x1000 bins
-#' matrix <- matrix(rnorm(500000, mean = 50, sd = 10) + c(rep(0, 250),
-#'   seq(0, 50, length.out = 500), rep(0, 250)), 500, 1000)
+#' # create a matrix 100x500 bins
+#' matrix <- matrix(rnorm(50000, mean = 50, sd = 10) + seq(50,500,length.out=50000), 100, 500)
 #'
 #' interMATplot(matrix, bin.width = 100e3)
 #'
 interMATplot <- function(matrix, bin.width, start_y = NULL, stop_y = NULL, start_x = NULL, stop_x = NULL, log2 = T, scale.colors = "H", scale.limits = NULL,
                     tad.x.tri = NULL, tad.y.tri = NULL, loop.bedpe = NULL, tad.chr_x = NULL, tad.chr_y = NULL, annotations.color = "red",
                     tad.x.line = NULL, tad.y.line = NULL, tad.line.col = NULL, line.colors = c("red", "blue")) {
-
-  #matrix = cool2matrix(cattle.files$norm_mcool, chr = 25, chr2 = 26, bin.width = 128000,
-  #                     balance = FALSE, verbose = TRUE)
-  #bin.width = 128e3; start_y = 10e6; stop_y = 40e6; start_x = NULL; stop_x = 50e6; log2 = T; scale.colors = "H"; scale.limits = NULL;
-  #tad.x.tri = NULL; tad.y.tri = NULL; loop.bedpe = NULL; tad.chr_x = NULL; tad.chr_y = NULL; annotations.color = "red";
-  #tad.x.line = NULL; tad.y.line = NULL; tad.line.col = NULL; line.colors = c("red", "blue")
-  #tad.x.line = cattle.files$dchic_comp; tad.chr_x = 26
-  #tad.y.line = cattle.files$dchic_comp; tad.chr_y = 25
 
   #sanity check
   if(!inherits(matrix, c("Matrix", "matrix"))) {
@@ -108,7 +102,8 @@ interMATplot <- function(matrix, bin.width, start_y = NULL, stop_y = NULL, start
                                 limits = c(min_graph2, max_graph2))+ #limit to match geom_tile centers
     ggplot2::scale_y_continuous(labels = scales::unit_format(unit = "Mb", scale = 1e-6),
                                 limits = c(-min_graph1, -max_graph1))+
-    ggplot2::coord_fixed()+ggplot2::theme(axis.title.x = ggplot2::element_blank(), axis.title.y = ggplot2::element_blank(), legend.title = ggplot2::element_blank())
+    ggplot2::coord_fixed()+
+    ggplot2::labs(x = NULL, y = NULL, fill = NULL, color = NULL)
 
   #scales colors
   if (scale.colors == "OE" | scale.colors == "ObsExp" | scale.colors == "OE2" | scale.colors == "ObsExp2") {
@@ -116,6 +111,8 @@ interMATplot <- function(matrix, bin.width, start_y = NULL, stop_y = NULL, start
       low = ifelse(scale.colors %in% c("OE" ,"ObsExp"), "blue", "purple4"),
       high = ifelse(scale.colors %in% c("OE" ,"ObsExp"), "red", "darkgreen"),
       midpoint = 0, mid="white", na.value = "white")
+  } else if (scale.colors %in% c("R", "Reds")) {
+    p <- p + ggplot2::scale_fill_gradient(low = "white", high = "red3", na.value = "white")
   } else {
     p <- p + viridis::scale_fill_viridis(na.value = "black", option = scale.colors)
     }
@@ -259,8 +256,8 @@ interMATplot <- function(matrix, bin.width, start_y = NULL, stop_y = NULL, start
     tad$e2 <- ifelse(tad$e >= max_graph1, max_graph1, tad$e)
     tad$s2 <- ifelse(tad$s <= min_graph1, min_graph1, tad$s)
 
-    p = p + ggplot2::geom_segment(data = tad, ggplot2::aes(x = min_graph2, y = -s2, xend = min_graph2, yend = -e2, col = col), linewidth = 1)+
-      ggplot2::geom_segment(data = tad, ggplot2::aes(x = max_graph2, y = -s2, xend = max_graph2, yend = -e2, col = col), linewidth = 1)
+    p = p + ggplot2::geom_segment(data = tad, ggplot2::aes(x = min_graph2, y = -s2, xend = min_graph2, yend = -e2, col = col), linewidth = 1.5)+
+      ggplot2::geom_segment(data = tad, ggplot2::aes(x = max_graph2, y = -s2, xend = max_graph2, yend = -e2, col = col), linewidth = 1.5)
   }
 
   if (!is.null(tad.x.line) | !is.null(tad.y.line)) {

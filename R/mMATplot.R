@@ -26,20 +26,16 @@
 #' @export
 #'
 #' @examples
-#' # get domains from boundaries:
-#' boundaries.gr = dataframes2grange(tad_HCT116_5kb.bed, human_chromsize)
-#' domains.gr = boundary2domain(boundaries.gr)
-#'
 #' mMATplot(matrix.upper = mat_HCT116_chr19_50kb,
 #'     matrix.lower = mat_HCT116_chr19_50kb,
 #'     start = 5e6, stop = 15e6,
-#'     bin.width = 50e3, log2 = TRUE,
-#'     tad.upper.tri = domains.gr,
-#'     tad.lower.tri = domains.gr,
-#'     tad.chr = "chr19")
+#'     bin.width = 50e3)
 #'
-#'  # add compartement A and B
-#'  comp.gr = PC1calling(PC1_250kb.gr)
+#' # add domains (i.e TADs)
+#' boundaries.gr = dataframes2grange(tad_HCT116_5kb.bed, human_chromsize)
+#' domains.gr = boundary2domain(boundaries.gr)
+#' # add compartment A and B
+#' comp.gr = PC1calling(PC1_250kb.gr)
 #'
 #' mMATplot(matrix.upper = mat_HCT116_chr19_50kb,
 #'     matrix.lower = mat_HCT116_chr19_50kb,
@@ -126,7 +122,8 @@ mMATplot <- function(matrix.upper, matrix.lower, bin.width, start = NULL, stop =
                                 limits = c(min_graph, max_graph))+
     ggplot2::scale_y_continuous(labels = scales::unit_format(unit = "Mb", scale = 1e-6),
                                 limits = c(-min_graph, -max_graph))+
-    ggplot2::coord_fixed()+ggplot2::theme(axis.title.x = ggplot2::element_blank(), axis.title.y = ggplot2::element_blank(), legend.title = ggplot2::element_blank())
+    ggplot2::coord_fixed()+
+    ggplot2::labs(x = NULL, y = NULL, fill = NULL, color = NULL)
 
   #scale_fill_gradient2
   if (scale.colors == "OE" | scale.colors == "ObsExp" | scale.colors == "OE2" | scale.colors == "ObsExp2") {
@@ -134,6 +131,8 @@ mMATplot <- function(matrix.upper, matrix.lower, bin.width, start = NULL, stop =
       low = ifelse(scale.colors %in% c("OE" ,"ObsExp"), "blue", "purple4"),
       high = ifelse(scale.colors %in% c("OE" ,"ObsExp"), "red", "darkgreen"),
       midpoint = 0, mid="white", na.value = "white")
+  } else if (scale.colors %in% c("R", "Reds")) {
+    p <- p + ggplot2::scale_fill_gradient(low = "white", high = "red3", na.value = "white")
   } else {
     p <- p + viridis::scale_fill_viridis(na.value = "black", option = scale.colors)
   }
@@ -162,8 +161,8 @@ mMATplot <- function(matrix.upper, matrix.lower, bin.width, start = NULL, stop =
     tad$e2 <- ifelse(tad$e >= max_graph, max_graph, tad$e)
     tad$s2 <- ifelse(tad$s <= min_graph, min_graph, tad$s)
 
-    p = p + ggplot2::geom_segment(data = tad, ggplot2::aes(x = s, y = -s, xend = e2, yend = -s2), color = annotations.color, size = 0.3)+
-      ggplot2::geom_segment(data = tad, ggplot2::aes(x = e2, y = -s2, xend = e, yend = -e), color = annotations.color, size = 0.3)
+    p = p + ggplot2::geom_segment(data = tad, ggplot2::aes(x = s, y = -s, xend = e2, yend = -s2), color = annotations.color, linewidth = 0.3)+
+      ggplot2::geom_segment(data = tad, ggplot2::aes(x = e2, y = -s2, xend = e, yend = -e), color = annotations.color, linewidth = 0.3)
   }
 
   #lower tri
@@ -189,8 +188,8 @@ mMATplot <- function(matrix.upper, matrix.lower, bin.width, start = NULL, stop =
     tad$e2 <- ifelse(tad$e >= max_graph, max_graph, tad$e)
     tad$s2 <- ifelse(tad$s <= min_graph, min_graph, tad$s)
 
-    p = p + ggplot2::geom_segment(data = tad, ggplot2::aes(x = s2, y = -e2, xend = e, yend = -e), color = annotations.color, size = 0.3)+
-      ggplot2::geom_segment(data = tad, ggplot2::aes(x = s, y = -s, xend = s2, yend = -e2), color = annotations.color, size = 0.3)
+    p = p + ggplot2::geom_segment(data = tad, ggplot2::aes(x = s2, y = -e2, xend = e, yend = -e), color = annotations.color, linewidth = 0.3)+
+      ggplot2::geom_segment(data = tad, ggplot2::aes(x = s, y = -s, xend = s2, yend = -e2), color = annotations.color, linewidth = 0.3)
   }
 
 
@@ -234,8 +233,8 @@ mMATplot <- function(matrix.upper, matrix.lower, bin.width, start = NULL, stop =
     tad$e2 <- ifelse(tad$e >= max_graph, max_graph, tad$e)
     tad$s2 <- ifelse(tad$s <= min_graph, min_graph, tad$s)
 
-    p = p + ggplot2::geom_segment(data = tad, ggplot2::aes(x = s2, y = -min_graph, xend = e2, yend = -min_graph, col = col), size = 1.5)+
-      ggplot2::geom_segment(data = tad, ggplot2::aes(x = max_graph, y = -s2, xend = max_graph, yend = -e2, col = col), size = 1.5)
+    p = p + ggplot2::geom_segment(data = tad, ggplot2::aes(x = s2, y = -min_graph, xend = e2, yend = -min_graph, col = col), linewidth = 1.5)+
+      ggplot2::geom_segment(data = tad, ggplot2::aes(x = max_graph, y = -s2, xend = max_graph, yend = -e2, col = col), linewidth = 1.5)
   }
 
   #lower line
@@ -278,8 +277,8 @@ mMATplot <- function(matrix.upper, matrix.lower, bin.width, start = NULL, stop =
     tad$e2 <- ifelse(tad$e >= max_graph, max_graph, tad$e)
     tad$s2 <- ifelse(tad$s <= min_graph, min_graph, tad$s)
 
-    p = p + ggplot2::geom_segment(data = tad, ggplot2::aes(x = min_graph, y = -s2, xend = min_graph, yend = -e2, col = col), size = 1)+
-      ggplot2::geom_segment(data = tad, ggplot2::aes(x = s2, y = -max_graph, xend = e2, yend = -max_graph, col = col), size = 1)
+    p = p + ggplot2::geom_segment(data = tad, ggplot2::aes(x = min_graph, y = -s2, xend = min_graph, yend = -e2, col = col), linewidth = 1.5)+
+      ggplot2::geom_segment(data = tad, ggplot2::aes(x = s2, y = -max_graph, xend = e2, yend = -max_graph, col = col), linewidth = 1.5)
   }
 
   if (!is.null(tad.upper.line) | !is.null(tad.lower.line)) {
@@ -303,17 +302,17 @@ mMATplot <- function(matrix.upper, matrix.lower, bin.width, start = NULL, stop =
         loop <- dplyr::filter(loop, chr1 == tad.chr, chr2 == tad.chr, start1 >= min_graph, end1 <= max_graph, start2 >= min_graph, end2 <= max_graph)}
 
 
-    p = p + ggplot2::geom_rect(data = loop, ggplot2::aes(xmin = start2, xmax = end2, ymin = -start1, ymax = -end1), fill = NA, color = annotations.color, size = 0.3)+
-      ggplot2::geom_rect(data = loop, ggplot2::aes(xmin = start1, xmax = end1, ymin = -start2, ymax = -end2), fill = NA, color = annotations.color, size = 0.3)
+    p = p + ggplot2::geom_rect(data = loop, ggplot2::aes(xmin = start2, xmax = end2, ymin = -start1, ymax = -end1), fill = NA, color = annotations.color, linewidth = 0.3)+
+      ggplot2::geom_rect(data = loop, ggplot2::aes(xmin = start1, xmax = end1, ymin = -start2, ymax = -end2), fill = NA, color = annotations.color, linewidth = 0.3)
   }
 
 
   if (!is.null(matrix.upper.txt)) {
-    p = p + annotate(geom = "text", x = max_graph, y = -min_graph, label = matrix.upper.txt, col = "red", size = 10, hjust = "right", vjust = "top")
+    p = p + annotate(geom = "text", x = max_graph, y = -min_graph, label = matrix.upper.txt, col = "red", size = 7, hjust = "right", vjust = "top")
   }
 
   if (!is.null(matrix.lower.txt)) {
-    p = p + annotate(geom = "text", x = min_graph, y = -max_graph, label = matrix.lower.txt, col = "red", size = 10, hjust = "left", vjust = "left")
+    p = p + annotate(geom = "text", x = min_graph, y = -max_graph, label = matrix.lower.txt, col = "red", size = 7, hjust = "left", vjust = "left")
   }
 
   p
