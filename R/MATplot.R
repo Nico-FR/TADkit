@@ -16,7 +16,7 @@
 #' @param matrix.diag logical. Weather or not to plot diagonal values of the matrix. Default = `TRUE`.
 #' @param log2 logical. Use the log2 of the matrix values. Default is `TRUE`.
 #' @param scale.limits Use to set limits on the scale. Default is NULL to use all values. E.g if use scale.limits = c(0, 10): Values < 0 will be fix to 0 and values > 10 will be fix to 10.
-#' @param scale.colors A character string indicating the color map option to use. Eight colors palettes are available from `viridis` package. Two supplementary palettes `"OE"` and  `"OE2"` (blue to red and purple to green respectively) are made for data centered on 0 (e.g log2 of observed/expected matrix). Default is `"H"`:
+#' @param scale.colors A character string indicating the color map option to use. Eight colors palettes are available from `viridis` package. Two supplementary palettes `"OE"` and `"OE2"` (blue to red and purple to green respectively) are made for data centered on 0 (e.g log2 of observed/expected matrix). The palettes `"R"` and `"Reds"` provide a white to darkred gradient. Default is `"H"`:
 #' * `"magma"` (or `"A"`),
 #' * `"inferno"` (or `"B"`),
 #' * `"plasma"` (or `"C"`),
@@ -133,9 +133,11 @@ MATplot <- function(matrix, bin.width, start = NULL, stop = NULL, log2 = T, scal
       low = ifelse(scale.colors %in% c("OE" ,"ObsExp"), "blue", "purple4"),
       high = ifelse(scale.colors %in% c("OE" ,"ObsExp"), "red", "darkgreen"),
       midpoint = 0, mid="white", na.value = "white")
+  } else if (scale.colors %in% c("R", "Reds")) {
+    p <- p + ggplot2::scale_fill_gradient(low = "white", high = "darkred", na.value = "black")
   } else {
     p <- p + viridis::scale_fill_viridis(na.value = "black", option = scale.colors)
-    }
+  }
 
 
   #upper tri
