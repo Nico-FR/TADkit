@@ -134,6 +134,8 @@ mMATplot <- function(matrix.upper, matrix.lower, bin.width, start = NULL, stop =
       low = ifelse(scale.colors %in% c("OE" ,"ObsExp"), "blue", "purple4"),
       high = ifelse(scale.colors %in% c("OE" ,"ObsExp"), "red", "darkgreen"),
       midpoint = 0, mid="white", na.value = "white")
+  } else if (scale.colors %in% c("R", "Reds")) {
+    p <- p + ggplot2::scale_fill_gradient(low = "white", high = "darkred", na.value = "black")
   } else {
     p <- p + viridis::scale_fill_viridis(na.value = "black", option = scale.colors)
   }
