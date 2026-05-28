@@ -126,7 +126,8 @@ mMATplot <- function(matrix.upper, matrix.lower, bin.width, start = NULL, stop =
                                 limits = c(min_graph, max_graph))+
     ggplot2::scale_y_continuous(labels = scales::unit_format(unit = "Mb", scale = 1e-6),
                                 limits = c(-min_graph, -max_graph))+
-    ggplot2::coord_fixed()+ggplot2::theme(axis.title.x = ggplot2::element_blank(), axis.title.y = ggplot2::element_blank(), legend.title = ggplot2::element_blank())
+    ggplot2::coord_fixed()+
+    ggplot2::labs(x = NULL, y = NULL, fill = NULL, color = NULL)
 
   #scale_fill_gradient2
   if (scale.colors == "OE" | scale.colors == "ObsExp" | scale.colors == "OE2" | scale.colors == "ObsExp2") {
