@@ -109,8 +109,7 @@ interMATplot <- function(matrix, bin.width, start_y = NULL, stop_y = NULL, start
     ggplot2::scale_y_continuous(labels = scales::unit_format(unit = "Mb", scale = 1e-6),
                                 limits = c(-min_graph1, -max_graph1))+
     ggplot2::coord_fixed()+
-    ggplot2::theme(legend.title = ggplot2::element_blank()) +
-    ggplot2::labs(x = NULL, y = NULL)
+    ggplot2::labs(x = "", y = "", fill = "", color = "")
 
   #scales colors
   if (scale.colors == "OE" | scale.colors == "ObsExp" | scale.colors == "OE2" | scale.colors == "ObsExp2") {

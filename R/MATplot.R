@@ -126,8 +126,7 @@ MATplot <- function(matrix, bin.width, start = NULL, stop = NULL, log2 = T, scal
     ggplot2::scale_y_continuous(labels = scales::unit_format(unit = "Mb", scale = 1e-6),
                                 limits = c(-min_graph, -max_graph))+
     ggplot2::coord_fixed()+
-    ggplot2::theme(legend.title = ggplot2::element_blank()) +
-    ggplot2::labs(x = NULL, y = NULL)
+    ggplot2::labs(x = "", y = "", fill = "", color = "")
 
   #scales colors
   if (scale.colors == "OE" | scale.colors == "ObsExp" | scale.colors == "OE2" | scale.colors == "ObsExp2") {
