@@ -1,6 +1,6 @@
 Package: TADkit
 Title: TAD and HiC matrix visualisation tool kit
-Version: 0.1.2.01
+Version: 0.1.3.00
 Authors@R: 
     person("Nicolas", "MARY", , "nicolas.mary@envt.fr", role = c("aut", "cre"), comment = c(ORCID = "0000-0002-7304-5555 "))
 URL: https://github.com/Nico-FR/TADkit
@@ -37,7 +37,8 @@ Imports:
     viridis,
     Matrix,
     rhdf5,
-    preprocessCore
+    preprocessCore,
+    data.table
 Depends: 
     R (>= 4.2.0)
 LazyData: true
