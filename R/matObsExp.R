@@ -13,7 +13,7 @@
 #' @return `dgCMatrix` object: upper triangular and sparse Matrix
 #'
 #' @importFrom stats toeplitz
-#' @importFrom Matrix triu summary
+#' @importFrom Matrix triu summary sparseMatrix
 #' @importFrom dplyr mutate filter group_by summarise
 #' @importClassesFrom Matrix dgCMatrix
 #' @importFrom methods as
@@ -37,24 +37,40 @@ matObsExp <- function(matrix, output = "OE") {
   if(inherits(matrix, "matrix")) {
     matrix = methods::as(matrix, "CsparseMatrix")}
 
-  diag_mean.df = Matrix::summary(matrix) %>%
-    dplyr::mutate(i = factor(i, levels = 1:ncol(matrix))) %>% #add missing index as levels
-    dplyr::mutate(j = factor(j, levels = 1:ncol(matrix))) %>% #add missing index as levels
-    tidyr::complete(., i, j, fill = list(x = NA), explicit = FALSE) %>% #add value NA to missing bins
-    dplyr::filter(as.numeric(i) <= as.numeric(j)) %>% #filter lower matrix
-    dplyr::mutate(dist = abs(as.numeric(i) - as.numeric(j))) %>% #add distances between bins
-    dplyr::group_by(dist) %>% dplyr::summarise(diag_mean = mean(x, na.rm = TRUE)) # mean according to distances
-  mat_expected = stats::toeplitz(diag_mean.df$diag_mean)
+  n = ncol(matrix)
 
-  out = if(output == "OE") {matrix / mat_expected} else if(output == "E") {mat_expected} else if(output == "Exp") {mat_expected}
+  s_original = Matrix::summary(matrix)
+  s = s_original[s_original$i <= s_original$j, ]
+  s$dist = s$j - s$i
+
+  diag_mean_vector = rep(NaN, n)
+  if (nrow(s) > 0) {
+    means = tapply(s$x, s$dist, mean, na.rm = TRUE)
+    dists = as.integer(names(means))
+    diag_mean_vector[dists + 1] = means
+  }
+
+  if (output == "OE") {
+    s_full = s_original
+    s_full$dist = abs(s_full$i - s_full$j)
+    s_full$x = s_full$x / diag_mean_vector[s_full$dist + 1]
+
+    out = Matrix::sparseMatrix(
+      i = s_full$i,
+      j = s_full$j,
+      x = s_full$x,
+      dims = dim(matrix),
+      symmetric = FALSE
+    )
+  } else {
+    mat_expected = stats::toeplitz(diag_mean_vector)
+    out = mat_expected
+  }
 
   return(
     if(inherits(out, "CsparseMatrix")) {out} else {methods::as(out, "CsparseMatrix")}
   )
 }
-
-
-
 
 
 
