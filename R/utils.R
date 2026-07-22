@@ -14,5 +14,6 @@ utils::globalVariables(c(
   "j", ".", "dist", # matObsExp
   ".", # viewPointInteract : <anonymous>
   ".", "mean_interact", # viewPointInteract
-  'tad.chr', 's_y', 'e_y', 's_x', 'e_x', 'c_y', 'c_x' #interMATplot
+  'tad.chr', 's_y', 'e_y', 's_x', 'e_x', 'c_y', 'c_x', #interMATplot
+  "bin1_id", "bin2_id"
 ))

@@ -18,7 +18,7 @@
 #'
 #' @return A `dgCMatrix` object: upper triangular and sparse Matrix
 #'
-#' @importFrom Matrix triu sparseMatrix
+#' @importFrom Matrix triu sparseMatrix drop0
 #' @importFrom rhdf5 h5read
 #' @importFrom dplyr filter
 #' @importFrom methods as
@@ -40,174 +40,184 @@ cool2matrix <- function(cool.path, chr, bin.width = NA, balance = FALSE, balanci
   ###################
 
   #mcool path
-    uri <- function(cool.path) {
-        if (!is.numeric(bin.width)) return(cool.path)
-        return(
-            paste(
-                "resolutions",
-                format(bin.width, scientific = FALSE),
-                cool.path,
-                sep = "/"
-            )
-        )
-    }
-
-    #verif bin.width
-    if (!is.na(bin.width)) {
-
-      #make sure bin.width is numeric
-      if (!is.numeric(bin.width)) {
-        bin.width = as.numeric(bin.width)
-      }
-
-      test_resolution = try(rhdf5::h5readAttributes(file = cool.path, name = uri(""), bit64conversion='double'), silent = TRUE) # test if the resolution exists
-
-      #if bin.width not available
-      if (inherits(test_resolution, "try-error")) {
-
-        #available resolutions
-        ar = (rhdf5::h5ls(cool.path) %>% dplyr::filter(group == "/resolutions"))$name
-        stop("\n '", bin.width, "' is not an available resolution.", " Resolutions available:\n", ar %>% as.numeric %>% sort %>% paste0(collapse = ", "), ".")
-      }
-    }
-
-    # The list of available chromosomes
-    chromosomes = rhdf5::h5read(file = cool.path, name = uri("chroms/name"))
-
-    if (!(chr %in% chromosomes)) {
-       stop("\n '", chr, "' is not a valid chromosome.", "\nChromosomes available: ", paste0(chromosomes, collapse = ", "), ".")
-    }
-    if (!is.null(chr2)) {
-      if (!(chr2 %in% chromosomes)) {
-         stop("\n '", chr2, "' is not a valid chromosome.", "\nChromosomes available: ", paste0(chromosomes, collapse = ", "), ".")
-      }
-    }
-
-    rank_1 = match(chr, chromosomes) #rank of chr in chromosomes list
-    flip.mat = FALSE #indicator to know if the matrix need to be flipped at the end (only needed if chr2 is before chr1 in the chromosomes list).
-
-    if (!is.null(chr2)) {
-      rank_2 =  match(chr2, chromosomes) #rank of chr2 in chromosomes list
-
-      #check that rank_1 < ran_2
-      if (!rank_1 < rank_2) { #need to switch chr order to match cool file
-        flip.mat = TRUE #indicate that the matrix need to be flipped at the end
-        rank_1.tmp = rank_1
-        rank_1 = rank_2
-        rank_2 = rank_1.tmp
-      }
-    }
-
-    # Fetch first bin IDs of chr
-    chrom1_offset = rhdf5::h5read(file = cool.path, name = uri("indexes/chrom_offset"))[rank_1:(rank_1 + 1)] + 1 #first bin ID (ie bin number) of chr & first bin ID of next chromosome
-    chrom1_first_bin_index = rhdf5::h5read(file = cool.path, name = uri("indexes/bin1_offset"))[chrom1_offset[1]] + 1 #first occurrence (ie line number = index) of first bin of chr in pixel table
-    chrom1_last_bin_index = rhdf5::h5read(file = cool.path, name = uri("indexes/bin1_offset"))[chrom1_offset[2]] #last occurrence (ie line number = index) of last bin of chr in pixel table
-
-    # Fetch chrom offset chr2
-    if (is.null(chr2)) { #if intra chromosome
-      chrom2_offset = chrom1_offset
-    } else { #if inter chromosomes
-      chrom2_offset = rhdf5::h5read(file = cool.path, name = uri("indexes/chrom_offset"))[rank_2:(rank_2 + 1)] + 1 #first bin ID (ie bin number) of chr2 & first bin ID of next chromosome
-    }
-
-    # number of bins for each chromosome
-    nb_bin_chr1 = chrom1_offset[2] - chrom1_offset[1]
-    nb_bin_chr2 = chrom2_offset[2] - chrom2_offset[1]
-
-    if (verbose) {
-
-      # matrix dimensions message
-      size_message = if(flip.mat) {
-        paste0(nb_bin_chr2, "x", nb_bin_chr1) # if matrix will be flipped
-      } else {
-          paste0(nb_bin_chr1, "x", nb_bin_chr2) # if matrix will not be flippedchrom2_last_bin_index
-      }
-
-      # print message
-      if (!is.na(bin.width)) { # mcool file
-        message(
-          paste0("Parsing .mcool file as ", size_message, " matrix at ", bin.width, " bp resolution."))
-      } else { # cool file
-          message(paste0("Parsing .cool file as ", size_message, " matrix at ", bin.width, " bp resolution."))
-        }
-    }
-
-    # Read the pixels data (3 col tables) for chr
-    bin1_id = rhdf5::h5read(file = cool.path, name = uri("pixels/bin1_id"), index = list(chrom1_first_bin_index:chrom1_last_bin_index))
-    bin2_id = rhdf5::h5read(file = cool.path, name = uri("pixels/bin2_id"), index = list(chrom1_first_bin_index:chrom1_last_bin_index))
-    interactions = rhdf5::h5read(file = cool.path, name = uri("pixels/count"), index = list(chrom1_first_bin_index:chrom1_last_bin_index))
-
-    melted.mat = data.frame(bin1_id = bin1_id + 1,
-                            bin2_id = bin2_id + 1, #convert to 1based bin IDs
-                            count = interactions) %>%
-      dplyr::filter(bin1_id %in% c(chrom1_offset[1]:(chrom1_offset[2] - 1))) %>% # filter only chr bins
-      dplyr::filter(bin2_id %in% c(chrom2_offset[1]:(chrom2_offset[2] - 1))) # filter only chr2 bins
-
-    melted.mat = melted.mat %>% dplyr::mutate(bin1_id = bin1_id - chrom1_offset[1] + 1, bin2_id = bin2_id - chrom2_offset[1] + 1) #reindex bins IDs to start at 1 for each chromosome
-
-    #check if max(melted.mat$bin1_id) < nb bins (i.e is there a gap at the end of the chr?)
-    #then, add the last bin index
-    if (max(melted.mat$bin1_id) < nb_bin_chr1 | max(melted.mat$bin2_id) < nb_bin_chr2) {
-      melted.mat = dplyr::bind_rows(
-        melted.mat,
-        data.frame(
-          bin1_id = nb_bin_chr1,
-          bin2_id = nb_bin_chr2,
-          count = 0
-        )
+  uri <- function(cool.path) {
+    if (!is.numeric(bin.width)) return(cool.path)
+    return(
+      paste(
+        "resolutions",
+        format(bin.width, scientific = FALSE),
+        cool.path,
+        sep = "/"
       )
+    )
+  }
+
+  #verif bin.width
+  if (!is.na(bin.width)) {
+
+    #make sure bin.width is numeric
+    if (!is.numeric(bin.width)) {
+      bin.width = as.numeric(bin.width)
     }
 
-    # flip the matrix if needed
-    if (!is.null(chr2) & flip.mat) {
-      melted.mat = melted.mat %>%
-        dplyr::rename(bin1_id = bin2_id,
-                      bin2_id = bin1_id)
+    test_resolution = try(rhdf5::h5readAttributes(file = cool.path, name = uri(""), bit64conversion='double'), silent = TRUE) # test if the resolution exists
+
+    #if bin.width not available
+    if (inherits(test_resolution, "try-error")) {
+
+      #available resolutions
+      ar = (rhdf5::h5ls(cool.path) %>% dplyr::filter(group == "/resolutions"))$name
+      stop("\n '", bin.width, "' is not an available resolution.", " Resolutions available:\n", ar %>% as.numeric %>% sort %>% paste0(collapse = ", "), ".")
+    }
+  }
+
+  # The list of available chromosomes
+  chromosomes = rhdf5::h5read(file = cool.path, name = uri("chroms/name"))
+
+  if (!(chr %in% chromosomes)) {
+    stop("\n '", chr, "' is not a valid chromosome.", "\nChromosomes available: ", paste0(chromosomes, collapse = ", "), ".")
+  }
+  if (!is.null(chr2)) {
+    if (!(chr2 %in% chromosomes)) {
+      stop("\n '", chr2, "' is not a valid chromosome.", "\nChromosomes available: ", paste0(chromosomes, collapse = ", "), ".")
+    }
+  }
+
+  rank_1 = match(chr, chromosomes) #rank of chr in chromosomes list
+  flip.mat = FALSE #indicator to know if the matrix need to be flipped at the end (only needed if chr2 is before chr1 in the chromosomes list).
+
+  if (!is.null(chr2)) {
+    rank_2 =  match(chr2, chromosomes) #rank of chr2 in chromosomes list
+
+    #check that rank_1 < ran_2
+    if (!rank_1 < rank_2) { #need to switch chr order to match cool file
+      flip.mat = TRUE #indicate that the matrix need to be flipped at the end
+      rank_1.tmp = rank_1
+      rank_1 = rank_2
+      rank_2 = rank_1.tmp
+    }
+  }
+
+  # Fetch first bin IDs of chr
+  chrom1_offset = rhdf5::h5read(file = cool.path, name = uri("indexes/chrom_offset"))[rank_1:(rank_1 + 1)] + 1 #first bin ID (ie bin number) of chr & first bin ID of next chromosome
+  chrom1_first_bin_index = rhdf5::h5read(file = cool.path, name = uri("indexes/bin1_offset"))[chrom1_offset[1]] + 1 #first occurrence (ie line number = index) of first bin of chr in pixel table
+  chrom1_last_bin_index = rhdf5::h5read(file = cool.path, name = uri("indexes/bin1_offset"))[chrom1_offset[2]] #last occurrence (ie line number = index) of last bin of chr in pixel table
+
+  # Fetch chrom offset chr2
+  if (is.null(chr2)) { #if intra chromosome
+    chrom2_offset = chrom1_offset
+  } else { #if inter chromosomes
+    chrom2_offset = rhdf5::h5read(file = cool.path, name = uri("indexes/chrom_offset"))[rank_2:(rank_2 + 1)] + 1 #first bin ID (ie bin number) of chr2 & first bin ID of next chromosome
+  }
+
+  # number of bins for each chromosome
+  nb_bin_chr1 = chrom1_offset[2] - chrom1_offset[1]
+  nb_bin_chr2 = chrom2_offset[2] - chrom2_offset[1]
+
+  if (verbose) {
+
+    # matrix dimensions message
+    size_message = if(flip.mat) {
+      paste0(nb_bin_chr2, "x", nb_bin_chr1) # if matrix will be flipped
+    } else {
+      paste0(nb_bin_chr1, "x", nb_bin_chr2) # if matrix will not be flippedchrom2_last_bin_index
     }
 
-    # Create sparse matrix
-    m = Matrix::sparseMatrix(i = melted.mat$bin1_id,
-                             j = melted.mat$bin2_id,
-                             x = as.numeric(melted.mat$count))
+    # print message
+    if (!is.na(bin.width)) { # mcool file
+      message(
+        paste0("Parsing .mcool file as ", size_message, " matrix at ", bin.width, " bp resolution."))
+    } else { # cool file
+      message(paste0("Parsing .cool file as ", size_message, " matrix at ", bin.width, " bp resolution."))
+    }
+  }
 
-    if (balance) {
+  # Read the pixels data (3 col tables) for chr
+  bin1_id = rhdf5::h5read(file = cool.path, name = uri("pixels/bin1_id"), index = list(chrom1_first_bin_index:chrom1_last_bin_index))
+  bin2_id = rhdf5::h5read(file = cool.path, name = uri("pixels/bin2_id"), index = list(chrom1_first_bin_index:chrom1_last_bin_index))
+  interactions = rhdf5::h5read(file = cool.path, name = uri("pixels/count"), index = list(chrom1_first_bin_index:chrom1_last_bin_index))
 
-      if (verbose) {message("\nBalancing")}
+  melted.mat = data.frame(bin1_id = bin1_id + 1,
+                          bin2_id = bin2_id + 1, #convert to 1based bin IDs
+                          count = interactions) %>%
+    dplyr::filter(bin1_id %in% c(chrom1_offset[1]:(chrom1_offset[2] - 1))) %>% # filter only chr bins
+    dplyr::filter(bin2_id %in% c(chrom2_offset[1]:(chrom2_offset[2] - 1))) # filter only chr2 bins
 
-      # check normalization names (balancing_name)
-      test_balancing_name = try(rhdf5::h5readAttributes(file = cool.path, name = uri(paste0("bins/", balancing_name))), silent = TRUE)
-      if (inherits(test_balancing_name, "try-error")) {
-        tmp = rhdf5::h5read(file = cool.path, name = uri("bins")) %>% names
-        an = tmp[!tmp %in% c("start", "end", "chrom")]
-        stop("\n '", balancing_name, "' normalisation is not available.", "\nNormalisations available are: ", paste0(an, collapse = ", "), ".")
-        }
+  melted.mat = melted.mat %>% dplyr::mutate(bin1_id = bin1_id - chrom1_offset[1] + 1, bin2_id = bin2_id - chrom2_offset[1] + 1) #reindex bins IDs to start at 1 for each chromosome
 
-      # Fetch the normalization values corresponding to the chr
-      w_chr1 = rhdf5::h5read(file = cool.path, name = uri("bins/weight"), index = list(chrom1_offset[1]:(chrom1_offset[2] - 1)))
+  #check if max(melted.mat$bin1_id) < nb bins (i.e is there a gap at the end of the chr?)
+  #then, add the last bin index
+  if (max(melted.mat$bin1_id) < nb_bin_chr1 | max(melted.mat$bin2_id) < nb_bin_chr2) {
+    melted.mat = dplyr::bind_rows(
+      melted.mat,
+      data.frame(
+        bin1_id = nb_bin_chr1,
+        bin2_id = nb_bin_chr2,
+        count = 0
+      )
+    )
+  }
 
-      #normalization matrix
-      if (is.null(chr2)) { #if only one chromosome
-        #upper matrix weight for intra chromosomal balancing
-        mat_weight = Matrix::triu(w_chr1 %*% t(w_chr1))
-        } else { #if two chromosomes
-          w_chr2 = rhdf5::h5read(file = cool.path, name = uri("bins/weight"), index = list(chrom2_offset[1]:(chrom2_offset[2] - 1)))
-          #full matrix weight for inter chromosomal balancing
-          mat_weight = Matrix::Matrix(w_chr1 %*% t(w_chr2))
+  # flip the matrix if needed
+  if (!is.null(chr2) & flip.mat) {
+    melted.mat = melted.mat %>%
+      dplyr::rename(bin1_id = bin2_id,
+                    bin2_id = bin1_id)
+  }
 
-          if (flip.mat) {
-            mat_weight = t(mat_weight)
-          }
-        }
+  # Create sparse matrix
+  m = Matrix::sparseMatrix(i = melted.mat$bin1_id,
+                           j = melted.mat$bin2_id,
+                           x = as.numeric(melted.mat$count))
 
-      mat_weight[is.na(mat_weight)] <- 0 #remove NaN
+  if (balance) {
 
-      #Balancing: cell by cell multiplication by the matrix normalization
-      mat = m * mat_weight
+    if (verbose) {message("\nBalancing")}
 
-      if (!inherits(mat, "dgCMatrix")) {
-        mat = methods::as(mat, "CsparseMatrix")}
-      return(mat)
+    # check normalization names (balancing_name)
+    test_balancing_name = try(rhdf5::h5readAttributes(file = cool.path, name = uri(paste0("bins/", balancing_name))), silent = TRUE)
+    if (inherits(test_balancing_name, "try-error")) {
+      tmp = rhdf5::h5read(file = cool.path, name = uri("bins")) %>% names
+      an = tmp[!tmp %in% c("start", "end", "chrom")]
+      stop("\n '", balancing_name, "' normalisation is not available.", "\nNormalisations available are: ", paste0(an, collapse = ", "), ".")
     }
 
-    return(m)
+    # Fetch the normalization values corresponding to the chr
+    w_chr1 = as.numeric(rhdf5::h5read(file = cool.path, name = uri(paste0("bins/", balancing_name)), index = list(chrom1_offset[1]:(chrom1_offset[2] - 1))))
+    w_chr1[is.na(w_chr1)] <- 0
+
+    s = Matrix::summary(m)
+
+    if (is.null(chr2)) { #if only one chromosome
+      s = s[s$i <= s$j, ]
+      val = s$x * w_chr1[s$i] * w_chr1[s$j]
+    } else { #if two chromosomes
+      w_chr2 = as.numeric(rhdf5::h5read(file = cool.path, name = uri(paste0("bins/", balancing_name)), index = list(chrom2_offset[1]:(chrom2_offset[2] - 1))))
+      w_chr2[is.na(w_chr2)] <- 0
+
+      if (flip.mat) {
+        val = s$x * w_chr2[s$i] * w_chr1[s$j]
+      } else {
+        val = s$x * w_chr1[s$i] * w_chr2[s$j]
+      }
+    }
+
+    # Reconstruct sparse matrix
+    mat = Matrix::sparseMatrix(
+      i = s$i,
+      j = s$j,
+      x = val,
+      dims = dim(m)
+    )
+
+    # Drop explicit zeros so they are represented as sparse dots (.)
+    mat = Matrix::drop0(mat)
+
+    if (!inherits(mat, "dgCMatrix")) {
+      mat = methods::as(mat, "CsparseMatrix")
+    }
+    return(mat)
+  }
+
+  return(m)
 }
